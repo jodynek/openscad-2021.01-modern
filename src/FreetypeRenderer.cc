@@ -28,7 +28,7 @@
 
 #include <iostream>
 
-#include <glib.h>
+#include "utf8utils.h"
 
 #include <fontconfig/fontconfig.h>
 
@@ -234,15 +234,15 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 		// values are untouched, so using the correct codepoint directly
 		// (e.g. \uf021 for the spider in Webdings) still works.
 		const char *p = params.text.c_str();
-		if (g_utf8_validate(p, -1, nullptr)) {
+		if (utf8::validate(p)) {
 			char buf[8];
 			while (*p != 0) {
 				memset(buf, 0, 8);
-				gunichar c = g_utf8_get_char(p);
+				std::uint32_t c = utf8::get_char(p);
 				c = (c < 0x0100) ? 0xf000 + c : c;
-			        g_unichar_to_utf8(c, buf);
+			        utf8::encode(c, buf);
 				hb_buffer_add_utf8(hb_buf, buf, strlen(buf), 0, strlen(buf));
-				p = g_utf8_next_char(p);
+				p = utf8::next_char(p);
 			}
 		} else {
 			LOG(message_group::Warning,Location::NONE,"","Ignoring text with invalid UTF-8 encoding: \"%1$s\"", params.text.c_str());

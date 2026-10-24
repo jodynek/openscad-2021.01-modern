@@ -13,6 +13,8 @@
 #pragma pop_macro("NDEBUG")
 
 #include <boost/range/adaptor/reversed.hpp>
+#include <CGAL/Inverse_index.h>
+#include <CGAL/circulator.h>
 
 #undef GEN_SURFACE_DEBUG
 namespace /* anonymous */ {
@@ -336,6 +338,35 @@ namespace CGALUtils {
 			*out << ']';
     }
 	};
+
+	// Local replacement for CGAL::generic_print_polyhedron(), which was removed in CGAL 5.x.
+	// Mirrors the original implementation from <CGAL/IO/generic_print_polyhedron.h>.
+	template <typename Polyhedron, typename Writer>
+	static void generic_print_polyhedron(std::ostream &out, const Polyhedron &P, Writer &writer) {
+		typedef typename Polyhedron::Vertex_const_iterator VCI;
+		typedef typename Polyhedron::Facet_const_iterator FCI;
+		typedef typename Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+
+		writer.write_header(out, P.size_of_vertices(), P.size_of_halfedges(), P.size_of_facets());
+		for (VCI vi = P.vertices_begin(); vi != P.vertices_end(); ++vi) {
+			writer.write_vertex(CGAL::to_double(vi->point().x()),
+			                    CGAL::to_double(vi->point().y()),
+			                    CGAL::to_double(vi->point().z()));
+		}
+		CGAL::Inverse_index<VCI> index(P.vertices_begin(), P.vertices_end());
+		writer.write_facet_header();
+		for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
+			HFCC hc = fi->facet_begin();
+			HFCC hc_end = hc;
+			writer.write_facet_begin(CGAL::circulator_size(hc));
+			do {
+				writer.write_facet_vertex_index(index[VCI(hc->vertex())]);
+				++hc;
+			} while (hc != hc_end);
+			writer.write_facet_end();
+		}
+		writer.write_footer();
+	}
 
 	template <typename Polyhedron>
 	std::string printPolyhedron(const Polyhedron &p) {

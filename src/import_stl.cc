@@ -6,7 +6,7 @@
 
 #include <fstream>
 #include <boost/predef.h>
-#include <boost/regex.hpp>
+#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -70,10 +70,9 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 		return p;
 	}
 	
-	boost::regex ex_sfe("solid|facet|endloop");
-	boost::regex ex_outer("outer loop");
-	boost::regex ex_vertex("vertex");
-	boost::regex ex_vertices("\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)");
+	// ASCII STL keywords are matched as plain substrings (the former regexes were
+	// "solid|facet|endloop", "outer loop" and "vertex <x> <y> <z>").
+	const auto contains = [](const std::string &s, const char *what) { return s.find(what) != std::string::npos; };
 	
 	bool binary = false;
 	std::streampos file_size = f.tellg();
@@ -105,10 +104,10 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 			if (line.length() == 0) {
 				continue;
 			}
-			if (boost::regex_search(line, ex_sfe)) {
+			if (contains(line, "solid") || contains(line, "facet") || contains(line, "endloop")) {
 				continue;
 			}
-			if (boost::regex_search(line, ex_outer)) {
+			if (contains(line, "outer loop")) {
 				i = 0;
 				continue;
 			}
@@ -117,11 +116,16 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 				delete p;
 				return new PolySet(3);
 			}
-			boost::smatch results;
-			if (boost::regex_search(line, results, ex_vertices)) {
+			const auto vpos = line.find("vertex");
+			std::string coords[3];
+			if (vpos != std::string::npos) {
+				std::istringstream iss(line.substr(vpos + 6));
+				if (!(iss >> coords[0] >> coords[1] >> coords[2])) coords[0].clear();
+			}
+			if (!coords[0].empty()) {
 				try {
 					for (int v = 0; v < 3; ++v) {
-						vdata[i][v] = boost::lexical_cast<double>(results[v + 1]);
+						vdata[i][v] = boost::lexical_cast<double>(coords[v]);
 					}
 					if (++i == 3) {
 						p->append_poly();

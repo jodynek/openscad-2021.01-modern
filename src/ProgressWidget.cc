@@ -24,7 +24,7 @@ bool ProgressWidget::wasCanceled() const
 */
 int ProgressWidget::elapsedTime() const
 {
-	return this->starttime.elapsed();
+	return static_cast<int>(this->starttime.elapsed());
 }
 
 void ProgressWidget::cancel()

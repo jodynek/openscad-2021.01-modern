@@ -104,7 +104,7 @@ std::string AbstractIntersectionNode::name() const
 
 void AbstractNode::progress_prepare()
 {
-	std::for_each(this->children.begin(), this->children.end(), std::mem_fun(&AbstractNode::progress_prepare));
+	std::for_each(this->children.begin(), this->children.end(), [](AbstractNode *child) { child->progress_prepare(); });
 	this->progress_mark = ++progress_report_count;
 }
 

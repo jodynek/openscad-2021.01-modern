@@ -39,7 +39,7 @@
 #include <fstream>
 #include <assert.h>
 #include <libxml/xmlreader.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "boost-utils.h"
 
 static const std::string text_node("#text");

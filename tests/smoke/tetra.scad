@@ -1,0 +1,1 @@
+import("sub/tetra.stl");

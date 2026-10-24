@@ -47,7 +47,7 @@ class ExperimentalFeatureException : public EvaluationException
 {
 public:
 	static void check(const Feature &feature);
-	~ExperimentalFeatureException() throw();
+	~ExperimentalFeatureException() noexcept;
 
 private:
 	ExperimentalFeatureException(const std::string &what_arg);

@@ -68,8 +68,8 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/optional.hpp>
+#include <filesystem>
+#include <optional>
 
 #ifdef _WIN32
 #include <io.h>
@@ -88,7 +88,7 @@
 #endif
 
 namespace po = boost::program_options;
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using std::string;
 using std::vector;
 using std::unique_ptr;
@@ -307,7 +307,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 
 	if (exit_if_not_found) {
-		LOG(message_group::None,Location::NONE,"",(boost::join(ColorMap::inst()->colorSchemeNames(), "\n")));
+		LOG(message_group::None,Location::NONE,"",(boost::algorithm::join(ColorMap::inst()->colorSchemeNames(), "\n")));
 
 		exit(1);
 	} else {
@@ -326,7 +326,7 @@ struct CommandLine
 	const std::string &parameterFile;
 	const std::string &setName;
 	const ViewOptions& viewOptions;
-	const boost::optional<FileFormat> export_format;
+	const std::optional<FileFormat> export_format;
 	unsigned animate_frames;
 };
 
@@ -335,15 +335,15 @@ int do_export(const CommandLine& cmd, Tree &tree, Camera& camera, ContextHandle<
 int cmdline(const CommandLine& cmd, Camera& camera)
 {
 	Tree tree;
-	boost::filesystem::path doc(cmd.filename);
+	std::filesystem::path doc(cmd.filename);
 	tree.setDocumentPath(doc.remove_filename().string());
 
 	ExportFileFormatOptions exportFileFormatOptions;
 	FileFormat export_format;
 
 	// Determine output file format and assign it to formatName
-	if(cmd.export_format.is_initialized()) {
-		export_format = cmd.export_format.get();
+	if(cmd.export_format.has_value()) {
+		export_format = cmd.export_format.value();
 	} else {
 		// else extract format from file extension
 		const auto path = fs::path(cmd.output_file);
@@ -608,6 +608,7 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 #include <QtPlugin>
 #include "MainWindow.h"
 #include "OpenSCADApp.h"
+#include <QStyleFactory>
 #include "launchingscreen.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
@@ -631,7 +632,6 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaType>
-#include <QTextCodec>
 #include <QProgressDialog>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
@@ -706,6 +706,12 @@ void registerDefaultIcon(QString) { }
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 	OpenSCADApp app(argc, argv);
+	// Fusion: the same modern, flat look on every platform, and it follows the system
+	// light/dark colour scheme (the platform styles on Windows stay light). A user can
+	// still pick another style with QT_STYLE_OVERRIDE or -style.
+	if (qEnvironmentVariableIsEmpty("QT_STYLE_OVERRIDE")) {
+		if (auto *fusion = QStyleFactory::create("Fusion")) QApplication::setStyle(fusion);
+	}
 	// remove ugly frames in the QStatusBar when using additional widgets
 	app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
 
@@ -902,7 +908,23 @@ bool flagConvert(std::string str){
 }
 
 // openSCAD
+static int openscad_main(int argc, char **argv);
+
+// Top-level guard: report an unexpected exception instead of a silent fail-fast abort.
 int main(int argc, char **argv)
+{
+	try {
+		return openscad_main(argc, argv);
+	} catch (const std::exception &e) {
+		fprintf(stderr, "FATAL: unhandled exception: %s\n", e.what());
+		return 1;
+	} catch (...) {
+		fprintf(stderr, "FATAL: unhandled unknown exception\n");
+		return 1;
+	}
+}
+
+static int openscad_main(int argc, char **argv)
 {
 	int rc = 0;
 	StackCheck::inst();
@@ -913,7 +935,7 @@ int main(int argc, char **argv)
 		PlatformUtils::registerApplicationPath(app.applicationDirPath().toLocal8Bit().constData());
 	}
 #else
-	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
+	PlatformUtils::registerApplicationPath(fs::absolute(std::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
 	
 #ifdef Q_OS_MAC
@@ -935,7 +957,7 @@ int main(int argc, char **argv)
 
 	vector<string> output_files;
 	const char *deps_output_file = nullptr;
-	boost::optional<FileFormat> export_format;
+	std::optional<FileFormat> export_format;
 
 	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
@@ -964,7 +986,7 @@ int main(int argc, char **argv)
 		("render", po::value<string>()->implicit_value(""), "for full geometry evaluation when exporting png")
 		("preview", po::value<string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
 		("animate", po::value<unsigned>(), "export N animated frames")
-		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::join(viewOptions.names(), " | ")).c_str())
+		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::algorithm::join(viewOptions.names(), " | ")).c_str())
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
 		("colorscheme", po::value<string>(), ("=colorscheme: " +

@@ -10,9 +10,9 @@
 
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
-#include <boost/variant.hpp>
+#include <variant>
 #include <boost/lexical_cast.hpp>
-#include <glib.h>
+#include "utf8utils.h"
 #endif
 
 #include "Assignment.h"
@@ -176,15 +176,15 @@ using RangePtr = ValuePtr<RangeType>;
 class str_utf8_wrapper
 {
 private:
-  // store the cached length in glong, paired with its string
+  // store the cached length in long, paired with its string
   struct str_utf8_t {
-    static constexpr glong LENGTH_UNKNOWN = -1;
+    static constexpr long LENGTH_UNKNOWN = -1;
     str_utf8_t() : u8str(), u8len(0) { }
     str_utf8_t(const std::string& s) : u8str(s) { }
     str_utf8_t(const char* cstr) : u8str(cstr) { }
-    str_utf8_t(const char* cstr, size_t size, glong u8len) : u8str(cstr, size), u8len(u8len) { }
+    str_utf8_t(const char* cstr, size_t size, long u8len) : u8str(cstr, size), u8len(u8len) { }
     const std::string u8str;
-    glong u8len = LENGTH_UNKNOWN;
+    long u8len = LENGTH_UNKNOWN;
   };
   // private constructor for copying members
   explicit str_utf8_wrapper(const shared_ptr<str_utf8_t> &str_in) : str_ptr(str_in) { }
@@ -237,9 +237,9 @@ public:
   const std::string& toString() const { return this->str_ptr->u8str; }
   size_t size() const { return this->str_ptr->u8str.size(); }
 
-  glong get_utf8_strlen() const {
+  long get_utf8_strlen() const {
     if (str_ptr->u8len == str_utf8_t::LENGTH_UNKNOWN) {
-      str_ptr->u8len = g_utf8_strlen(str_ptr->u8str.c_str(), str_ptr->u8str.size());
+      str_ptr->u8len = utf8::strlen(str_ptr->u8str.c_str(), str_ptr->u8str.size());
     }
     return str_ptr->u8len;
   };
@@ -306,7 +306,7 @@ private:
 std::ostream& operator<<(std::ostream& stream, const UndefType& u);
 
 /**
- *  Value class encapsulates a boost::variant value which can represent any of the
+ *  Value class encapsulates a std::variant value which can represent any of the
  *  value types existing in the SCAD language.
  * -- As part of a refactoring effort which began as PR #2881 and continued as PR #3102,
  *    Value and its constituent types have been made (nominally) "move only".
@@ -336,7 +336,7 @@ public:
   static const Value undefined;
 
   /**
-   * VectorType is the underlying "BoundedType" of boost::variant for OpenSCAD vectors.
+   * VectorType is the underlying alternative type of std::variant for OpenSCAD vectors.
    * It holds only a shared_ptr to its VectorObject type, and provides a convenient
    * interface for various operations needed on the vector.
    *
@@ -513,13 +513,13 @@ public:
   static Value undef(const std::string &why); // creation of undef requires a reason!
 
   const std::string typeName() const;
-  Type type() const { return static_cast<Type>(this->value.which()); }
+  Type type() const { return static_cast<Type>(this->value.index()); }
   bool isDefinedAs(const Type type) const { return this->type() == type; }
   bool isDefined()   const { return this->type() != Type::UNDEFINED; }
   bool isUndefined() const { return this->type() == Type::UNDEFINED; }
   bool isUncheckedUndef() const;
 
-  // Conversion to boost::variant "BoundedType"s. const ref where appropriate.
+  // Conversion to the std::variant alternative types. const ref where appropriate.
   bool toBool() const;
   double toDouble() const;
   const str_utf8_wrapper& toStrUtf8Wrapper() const;
@@ -572,7 +572,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr> Variant;
+  typedef std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr> Variant;
   static_assert(sizeof(Variant) <= 24, "Memory size of Value too big");
 
 private:

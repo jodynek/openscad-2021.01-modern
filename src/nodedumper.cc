@@ -4,7 +4,7 @@
 #include "ModuleInstantiation.h"
 #include <string>
 #include <sstream>
-#include <boost/regex.hpp>
+#include <regex>
 
 
 void GroupNodeChecker::incChildCount(int groupNodeIndex) {
@@ -149,10 +149,10 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		
 		if (this->idString) {
 			
-			static const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
+			static const std::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
 			const auto name = STR(node);
-			boost::sregex_token_iterator it(name.begin(), name.end(), re, 0);
-			std::copy(it, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(this->dumpstream));
+			std::sregex_token_iterator it(name.begin(), name.end(), re, 0);
+			std::copy(it, std::sregex_token_iterator(), std::ostream_iterator<std::string>(this->dumpstream));
 		
 			if (node.getChildren().size() > 0) {
 				this->dumpstream << "{";

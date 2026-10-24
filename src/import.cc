@@ -45,8 +45,8 @@
 #include <sys/types.h>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -231,7 +231,7 @@ std::string ImportNode::toString() const
 	stream << ", scale = " << this->scale
 		<< ", convexity = " << this->convexity
 		<< ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
-		<< ", timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+		<< ", timestamp = " << (fs::exists(path) ? fs_last_write_time(path) : 0LL)
 		<< ")";
 
 	return stream.str();

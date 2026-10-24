@@ -3,9 +3,9 @@
 #include "PlatformUtils.h"
 
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
 

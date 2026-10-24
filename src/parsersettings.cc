@@ -1,9 +1,9 @@
 #include "parsersettings.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/algorithm/string.hpp>
 #include "PlatformUtils.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 std::vector<std::string> librarypath;
 
@@ -137,11 +137,16 @@ void parser_init()
 		std::string sep = PlatformUtils::pathSeparatorChar();
 		typedef boost::split_iterator<std::string::iterator> string_split_iterator;
 		for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
-			add_librarydir(fs::absolute(fs::path(boost::copy_range<std::string>(*it))).generic_string());
+			const std::string dir = boost::copy_range<std::string>(*it);
+			// skip empty entries (e.g. a trailing separator): std::filesystem::absolute("") throws on Windows
+			if (!dir.empty()) add_librarydir(fs::absolute(fs::path(dir)).generic_string());
 		}
 	}
 
 	add_librarydir(PlatformUtils::userLibraryPath());
 
-	add_librarydir(fs::absolute(PlatformUtils::resourcePath("libraries")).string());
+	// resourcePath() returns "" when the bundled libraries folder is missing (e.g. a plain build tree);
+	// boost::filesystem::absolute("") silently yielded the current directory, std::filesystem throws.
+	const fs::path builtinLibs = PlatformUtils::resourcePath("libraries");
+	if (!builtinLibs.empty()) add_librarydir(fs::absolute(builtinLibs).string());
 }

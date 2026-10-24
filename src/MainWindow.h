@@ -41,7 +41,7 @@ public:
 
 	QTimer *autoReloadTimer;
 	QTimer *waitAfterReloadTimer;
-	QTime renderingTime;
+	QElapsedTimer renderingTime;
 	EditorInterface *customizerEditor;
 
 	ContextHandle<BuiltinContext> top_ctx;

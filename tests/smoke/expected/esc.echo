@@ -1,0 +1,7 @@
+ECHO: "ž", "😀", "Aé", " x", " y", "￾z", "A", 2
+WARNING: Ignoring unknown variable '0xD800' in file esc.scad, line 2
+WARNING: Ignoring unknown variable '0xFFFE' in file esc.scad, line 2
+WARNING: Ignoring unknown variable '0xFDD0' in file esc.scad, line 2
+WARNING: Ignoring unknown variable '0x10FFFF' in file esc.scad, line 2
+WARNING: Ignoring unknown variable '0x110000' in file esc.scad, line 2
+ECHO: 382, 128512, "", "", "", "", ""

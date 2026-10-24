@@ -28,7 +28,9 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent), forceShowEd
 	LaunchingScreen::inst = this;
 	setupUi(this);
 
-	this->setStyleSheet("QDialog {background-image:url(':/icons/background.png')} QPushButton {color:white;}");
+	// no bitmap background / hand-made gradients any more: the dialog follows the application
+	// style and palette (light or dark) like every other window
+	this->pushButtonNew->setDefault(true);
 
 	this->versionNumberLabel->setText("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
 

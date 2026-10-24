@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 
-namespace fs=boost::filesystem;
+namespace fs = std::filesystem;
 
 // Will normalize the given path, i.e. remove any redundant ".." path elements.
 fs::path boostfs_normalize(const fs::path &path)

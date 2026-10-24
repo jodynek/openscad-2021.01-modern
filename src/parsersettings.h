@@ -1,9 +1,10 @@
 #pragma once
 
 #include <string>
-#include <boost/filesystem.hpp>
+#include <vector>
+#include <filesystem>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 extern int parser_error_pos;
 

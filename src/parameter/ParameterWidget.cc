@@ -37,7 +37,7 @@
 #include "modcontext.h"
 #include "comment.h"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -134,14 +134,14 @@ void ParameterWidget::onSetSaveButton()
 
 void ParameterWidget::setFile(QString scadFile){
 	this->unreadableFileExists = false; // we can not know it, but we do not want to report a problem when there is none
-	boost::filesystem::path p = scadFile.toStdString();
+	std::filesystem::path p = scadFile.toStdString();
 	this->jsonFile = p.replace_extension(".json").string();
 }
 
 void ParameterWidget::readFile(QString scadFile)
 {
 	setFile(scadFile);
-	bool exists = boost::filesystem::exists(this->jsonFile);
+	bool exists = std::filesystem::exists(this->jsonFile);
 	bool writeable = false;
 	bool readable = false;
 
@@ -189,7 +189,7 @@ void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 void ParameterWidget::writeBackupFile(QString scadFile)
 {
 	if (!this->setMgr->isEmpty()){
-		boost::filesystem::path p = scadFile.toStdString();
+		std::filesystem::path p = scadFile.toStdString();
 		auto jsonFile = p.replace_extension(".json").string();
 		this->setMgr->writeParameterSet(jsonFile);
 	}

@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 extern bool parse(class FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug);
 

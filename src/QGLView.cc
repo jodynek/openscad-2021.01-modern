@@ -322,7 +322,7 @@ bool QGLView::save(const char *filename) const
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
-	const auto pos = event->pos();
+	const auto pos = event->position().toPoint();
 	const int v = event->angleDelta().y();
 	if (this->mouseCentricZoom) {
 		zoomCursor(pos.x(), pos.y(), v);

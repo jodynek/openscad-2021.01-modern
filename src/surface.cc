@@ -48,8 +48,8 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 class SurfaceModule : public AbstractModule
 {
@@ -318,7 +318,7 @@ std::string SurfaceNode::toString() const
 	stream << this->name() << "(file = " << this->filename
 		<< ", center = " << (this->center ? "true" : "false")
 		<< ", invert = " << (this->invert ? "true" : "false")
-				 << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+				 << ", " "timestamp = " << (fs::exists(path) ? fs_last_write_time(path) : 0LL)
 				 << ")";
 
 	return stream.str();

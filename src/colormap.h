@@ -6,10 +6,10 @@
 #include "linalg.h"
 
 #include "memory.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/property_tree/ptree.hpp>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 enum class RenderColor {
 	BACKGROUND_COLOR,

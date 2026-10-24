@@ -1,7 +1,7 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <stdlib.h>
 #include <algorithm>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "boost-utils.h"
@@ -11,6 +11,7 @@
 #include <Qsci/qscicommandset.h>
 
 #include "scintillaeditor.h"
+#include <QRegularExpression>
 #include "Preferences.h"
 #include "PlatformUtils.h"
 #include "settings.h"
@@ -19,7 +20,7 @@
 #include <QWheelEvent>
 #include<QPoint>
 
-namespace fs=boost::filesystem;
+namespace fs = std::filesystem;
 
 const QString ScintillaEditor::cursorPlaceHolder = "^~^";
 
@@ -1026,7 +1027,7 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 	 {
 		if (!wasChanged) qsci->beginUndoAction();
 
-		if (wheelEvent->delta() < 0)
+		if (wheelEvent->angleDelta().y() < 0)
 		{
 			if (modifyNumber(Qt::Key_Down)) 
 			{
@@ -1036,7 +1037,7 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 		}
 		else
 		{
-			// wheelEvent->delta() > 0
+			// wheelEvent->angleDelta().y() > 0
 			if (modifyNumber(Qt::Key_Up))
 			{
 				wasChanged = true;
@@ -1056,7 +1057,7 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 		auto *cmd = qsci->standardCommands()->boundTo(k);
 		if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
 			QTimer::singleShot(0, this, SIGNAL(previewRequest()));
-		else if (cmd || wheelEvent->delta())
+		else if (cmd || wheelEvent->angleDelta().y())
 		{
 			// any insert or command (but not undo/redo) cancels the preview after undo
 			previewAfterUndo = false;
@@ -1071,11 +1072,11 @@ void ScintillaEditor::navigateOnNumber(int key)
 	qsci->getCursorPosition(&line, &index);
 	auto text=qsci->text(line);
 	auto left=text.left(index);
-	auto dotOnLeft=left.contains(QRegExp("\\.\\d*$"));
+	auto dotOnLeft=left.contains(QRegularExpression("\\.\\d*$"));
 	auto dotJustLeft=index>1 && text[index-2]=='.';
 	auto dotJustRight=text[index]=='.';
-	auto numOnLeft=left.contains(QRegExp("\\d\\.?$")) || left.endsWith("-.");
-	auto numOnRight=text.indexOf(QRegExp("\\.?\\d"),index)==index;
+	auto numOnLeft=left.contains(QRegularExpression("\\d\\.?$")) || left.endsWith("-.");
+	auto numOnRight=text.indexOf(QRegularExpression("\\.?\\d"),index)==index;
 
 	switch (key)
 	{
@@ -1112,16 +1113,16 @@ bool ScintillaEditor::modifyNumber(int key)
 	qsci->SendScintilla(QsciScintilla::SCI_SETEMPTYSELECTION);
 	qsci->setCursorPosition(line, index);
 
-	auto begin=QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
+	auto begin=static_cast<int>(text.left(index).indexOf(QRegularExpression("[-+]?\\d*\\.?\\d*$")));
 
-	QRegExp rx("[_a-zA-Z]");
+	const QRegularExpression rx("^[_a-zA-Z]$");
 	auto check = text.mid(begin-1,1);
-	if(rx.exactMatch(check)) return false;
+	if(rx.match(check).hasMatch()) return false;
 
-	auto end=text.indexOf(QRegExp("[^0-9.]"),index);
+	auto end=static_cast<int>(text.indexOf(QRegularExpression("[^0-9.]"),index));
 	if (end<0) end=text.length();
 	auto nr=text.mid(begin,end-begin);
-	if ( !(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d+$")) && nr.contains(QRegExp("\\d"))) ) return false;
+	if ( !(nr.contains(QRegularExpression("^[-+]?\\d*\\.?\\d+$")) && nr.contains(QRegularExpression("\\d"))) ) return false;
 	auto sign=nr[0]=='+'||nr[0]=='-';
 	if (nr.endsWith('.')) nr=nr.left(nr.length()-1);
 	auto curpos=index-begin;
@@ -1315,7 +1316,7 @@ void ScintillaEditor::findMarker(int findStartOffset, int wrapStart, std::functi
 	}
 	if (line != -1) {
 		// make sure we don't wrap into new line
-		int len = qsci->text(line).remove(QRegExp("[\n\r]$")).length();
+		int len = static_cast<int>(qsci->text(line).remove(QRegularExpression("[\n\r]$")).length());
 		int col = std::min(index, len);
 		qsci->setCursorPosition(line, col);
 	}

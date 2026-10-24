@@ -90,12 +90,14 @@
 #include <QTemporaryFile>
 #include <QDockWidget>
 #include <QClipboard>
-#include <QDesktopWidget>
+#include <QScreen>
+#include <QGuiApplication>
 #include <string>
 #include "QWordSearchField.h"
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
-#include <QSound>
+#include <QSoundEffect>
+#include <QUrl>
 
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
@@ -357,7 +359,7 @@ MainWindow::MainWindow(const QStringList &filenames)
     connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(showFind()));
     connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(showFindAndReplace()));
 #ifdef Q_OS_WIN
-	this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F));
+	this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F));
 #endif
 	connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
 	connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
@@ -572,8 +574,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 		// again.
 		// On Windows that causes the main window to open in a not
 		// easily reachable place.
-		auto desktop = QApplication::desktop();
-		auto desktopRect = desktop->frameGeometry().adjusted(250, 150, -250, -150).normalized();
+		auto desktopRect = QGuiApplication::primaryScreen()->virtualGeometry().adjusted(250, 150, -250, -150).normalized();
 		auto windowRect = frameGeometry();
 		if (!desktopRect.intersects(windowRect)) {
 			windowRect.moveCenter(desktopRect.center());
@@ -633,7 +634,7 @@ void MainWindow::openFileFromPath(QString path,int line)
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
 {
-	int defaultcolor = viewerToolBar->palette().background().color().lightness();
+	int defaultcolor = viewerToolBar->palette().window().color().lightness();
 	const char *resource = (defaultcolor > 165) ? darkResource : lightResource;
 	action->setIcon(QIcon(resource));
 }
@@ -1157,7 +1158,7 @@ void MainWindow::instantiateRoot()
 	this->root_node = nullptr;
 	this->tree.setRoot(nullptr);
 
-	boost::filesystem::path doc(activeEditor->filepath.toStdString());
+	std::filesystem::path doc(activeEditor->filepath.toStdString());
 	this->tree.setDocumentPath(doc.remove_filename().string());
 
 	if (this->root_module) {
@@ -1418,8 +1419,7 @@ void MainWindow::writeBackup(QFile *file)
 {
 	// see MainWindow::saveBackup()
 	file->resize(0);
-	QTextStream writer(file);
-	writer.setCodec("UTF-8");
+	QTextStream writer(file); // Qt 6: UTF-8 by default
 	writer << activeEditor->toPlainText();
 	this->parameterWidget->writeBackupFile(file->fileName());
 	
@@ -1741,7 +1741,7 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 		"\n\x03\n" + commandline_commands;
 
 	auto fnameba = activeEditor->filepath.toLocal8Bit();
-	const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+	const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba.constData();
 	delete this->parsed_module;
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
@@ -2131,7 +2131,13 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() && 
 		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= ms.count()/1000)
 	{
-		QSound::play(":sounds/complete.wav");
+		// QSound was removed in Qt 6; keep one QSoundEffect for the lifetime of the window
+		static QSoundEffect *renderCompleteSound = nullptr;
+		if (!renderCompleteSound) {
+			renderCompleteSound = new QSoundEffect(this);
+			renderCompleteSound->setSource(QUrl("qrc:/sounds/complete.wav"));
+		}
+		renderCompleteSound->play();
 	}
 
 	renderedEditor = activeEditor;
@@ -2284,7 +2290,7 @@ void MainWindow::actionDisplayAST()
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(tabStopWidth);
+	e->setTabStopDistance(tabStopWidth);
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_module) {
@@ -2303,7 +2309,7 @@ void MainWindow::actionDisplayCSGTree()
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(tabStopWidth);
+	e->setTabStopDistance(tabStopWidth);
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (this->root_node) {
@@ -2323,7 +2329,7 @@ void MainWindow::actionDisplayCSGProducts()
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(tabStopWidth);
+	e->setTabStopDistance(tabStopWidth);
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")

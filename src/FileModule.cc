@@ -34,9 +34,9 @@
 #include "StatCache.h"
 #include "evalcontext.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "boost-utils.h"
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
 
@@ -65,7 +65,7 @@ void FileModule::registerUse(const std::string path, const Location &loc)
 	auto ext = fs::path(path).extension().generic_string();
 
 	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
-		if (fs::is_regular(path)) {
+		if (fs::is_regular_file(path)) {
 			FontCache::instance()->register_font_file(path);
 		} else {
 			LOG(message_group::Error,Location::NONE,"","Can't read font with path '%1$s'",path);

@@ -6,7 +6,10 @@
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(4,11,0)
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5,4,0)
+  // CGAL 5.4 renamed Triangulation_2_filtered_projection_traits_3 -> Filtered_projection_traits_3
+  #include <CGAL/Projection_traits_3.h>
+#elif CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(4,11,0)
   #include <CGAL/Triangulation_2_projection_traits_3.h>
 #else
   #include <CGAL/Triangulation_2_filtered_projection_traits_3.h>
@@ -19,7 +22,11 @@ struct FaceInfo {
   bool in_domain() { return nesting_level%2 == 1; }
 };
 
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5,4,0)
+typedef CGAL::Filtered_projection_traits_3<K> Projection;
+#else
 typedef CGAL::Triangulation_2_filtered_projection_traits_3<K> Projection;
+#endif
 typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, K> Fbb;
 typedef CGAL::Triangulation_data_structure_2<
 	CGAL::Triangulation_vertex_base_2<Projection>,

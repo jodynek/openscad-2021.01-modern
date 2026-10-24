@@ -38,6 +38,7 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/std/vector.hpp>
 #include <boost/assign/list_of.hpp>
+#include <optional>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 class ColorModule : public AbstractModule
@@ -216,25 +217,25 @@ ColorModule::~ColorModule()
 }
 
 // Parses hex colors according to: https://drafts.csswg.org/css-color/#typedef-hex-color.
-// If the input is invalid, returns boost::none.
+// If the input is invalid, returns std::nullopt.
 // Supports the following formats:
 // * "#rrggbb"
 // * "#rrggbbaa"
 // * "#rgb"
 // * "#rgba"
-boost::optional<Color4f> parse_hex_color(const std::string& hex) {
+std::optional<Color4f> parse_hex_color(const std::string& hex) {
 	// validate size. short syntax uses one hex digit per color channel instead of 2.
 	const bool short_syntax = hex.size() == 4 || hex.size() == 5;
 	const bool long_syntax = hex.size() == 7 || hex.size() == 9;
-	if (!short_syntax && !long_syntax) return boost::none;
+	if (!short_syntax && !long_syntax) return std::nullopt;
 
 	// validate
-	if (hex[0] != '#') return boost::none;
+	if (hex[0] != '#') return std::nullopt;
 	if (!std::all_of(std::begin(hex)+1, std::end(hex),
 					[](char c) {
 						return std::isxdigit(static_cast<unsigned char>(c));
 					})) {
-		return boost::none;
+		return std::nullopt;
 	}
 
 	// number of characters per color channel

@@ -38,8 +38,8 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 class RotateExtrudeModule : public AbstractModule
 {
@@ -117,7 +117,7 @@ std::string RotateExtrudeNode::toString() const
 			"layer = " << QuotedString(this->layername) << ", "
 			"origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
 			"scale = " << this->scale << ", "
-			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
+			<< "timestamp = " << (fs::exists(path) ? fs_last_write_time(path) : 0LL) << ", "
 			;
 	}
 	stream <<

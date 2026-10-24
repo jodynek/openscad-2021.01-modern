@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "openscad",
+  "version-string": "2021.01",
+  "description": "OpenSCAD 2021.01 - MSVC x64 build via vcpkg manifest",
+  "builtin-baseline": "08098dce081e9411889686fc3f4aecbde95fc2b1",
+  "dependencies": [
+    "boost-algorithm",
+    "boost-assign",
+    "boost-bind",
+    "boost-circular-buffer",
+    "boost-conversion",
+    "boost-foreach",
+    "boost-format",
+    "boost-functional",
+    "boost-fusion",
+    "boost-lexical-cast",
+    "boost-logic",
+    "boost-optional",
+    "boost-predef",
+    "boost-program-options",
+    "boost-property-tree",
+    "boost-range",
+    "boost-spirit",
+    "boost-tokenizer",
+    "cairo",
+    "cgal",
+    "double-conversion",
+    "eigen3",
+    "fontconfig",
+    "freetype",
+    "gettext-libintl",
+    "glew",
+    "harfbuzz",
+    "libxml2",
+    "libzip",
+    "opencsg"
+  ],
+  "overrides": [
+    {
+      "name": "cgal",
+      "version": "5.6.1",
+      "port-version": 1
+    },
+    {
+      "name": "opencsg",
+      "version": "1.4.2",
+      "port-version": 4
+    }
+  ],
+  "$comment": "CGAL pinned to 5.6.1: OpenSCAD 2021.01 is C++14 and uses API removed in CGAL 6. OpenCSG pinned to 1.4.2 (GLEW-based): the vcpkg 1.8.x port omits its bundled GLAD loader sources, so the static library does not link."
+}

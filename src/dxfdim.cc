@@ -39,10 +39,10 @@
 #include <sstream>
 #include <cstdint>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 ValueMap dxf_dim_cache;
 ValueMap dxf_cross_cache;
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
@@ -87,7 +87,7 @@ Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 	if (fs::exists(filepath)) {
 		if(fs::is_regular_file(filepath)){
 			filesize = fs::file_size(filepath);
-			lastwritetime = fs::last_write_time(filepath);
+			lastwritetime = fs_last_write_time(filepath);
 		}
 	}else{
 		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Can't open DXF file '%1$s'!",rawFilename);
@@ -192,7 +192,7 @@ Value builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_pt
 	if (fs::exists(filepath)) {
 		if(fs::is_regular_file(filepath)){
 			filesize = fs::file_size(filepath);
-			lastwritetime = fs::last_write_time(filepath);
+			lastwritetime = fs_last_write_time(filepath);
 		}
 	}else{
 		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Can't open DXF file '%1$s'!",rawFilename);

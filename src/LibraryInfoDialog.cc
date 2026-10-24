@@ -2,7 +2,7 @@
 #include "LibraryInfoDialog.h"
 
 #include <QString>
-#include <QStringRef>
+#include <QStringView>
 #include <QTextEdit>
 #include "LibraryInfo.h"
 
@@ -41,8 +41,8 @@ void LibraryInfoDialog::update_library_info(const QString& rendererInfo)
 				//handle property with multiple lines
 				auto endInd = info.indexOf(":", startIndex);
 				if (endInd != -1) {
-					QStringRef lines(&info, startIndex, endInd - startIndex);
-					auto lastIndex = lines.lastIndexOf("<br/>");
+					const QStringView lines = QStringView(info).mid(startIndex, endInd - startIndex);
+					const auto lastIndex = static_cast<int>(lines.lastIndexOf(QLatin1String("<br/>")));
 					startIndex = lastIndex != -1 ? lastIndex+startIndex : startIndex;
 				}
 			}

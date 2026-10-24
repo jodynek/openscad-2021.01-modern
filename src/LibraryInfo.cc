@@ -1,5 +1,4 @@
 #include "LibraryInfo.h"
-#include <glib.h>
 #include <vector>
 #ifdef USE_SCINTILLA_EDITOR
 #include <Qsci/qsciglobal.h>
@@ -130,7 +129,6 @@ std::string LibraryInfo::info()
 	  << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
           << "\nInputDrivers: " << InputDriverManager::instance()->listDrivers()
 #endif
-	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nlodepng version: " << LODEPNG_VERSION_STRING
 	  << "\nlibzip version: " << LIBZIP_VERSION
 	  << "\nfontconfig version: " << get_fontconfig_version()

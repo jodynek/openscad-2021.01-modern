@@ -1,0 +1,29 @@
+ECHO: 7.5, -1.5, 13.5, 0.666667, 3, 9, -3, false, false, true
+ECHO: true, false, true, false, true, false, true, true, true, false
+ECHO: [2, 3, 4], [0, 1, 2], [2, 4, 6], [2, 4, 6], [0.5, 1, 1.5], 14, [3, 7], [7, 10], [-1, -2, -3]
+WARNING: undefined operation (string + number) in file lang.scad, line 6
+WARNING: undefined operation (string * number) in file lang.scad, line 6
+WARNING: undefined operation (vector + number) in file lang.scad, line 6
+WARNING: undefined operation (undefined + number) in file lang.scad, line 6
+WARNING: undefined operation (bool + number) in file lang.scad, line 6
+ECHO: undef, undef, undef, undef, undef, inf, -inf, nan, inf
+ECHO: "34.5abc[1, 2, 3][0 : 2 : 10]undeftrue", "0.333333", "0", "1e+21", "1.23457e+17"
+ECHO: 1, 3, undef, undef, "a", undef, 0, 2, 10, undef, undef, undef
+WARNING: len() parameter could not be converted in file lang.scad, line 9
+WARNING: len() parameter could not be converted in file lang.scad, line 9
+WARNING: len() parameter could not be converted in file lang.scad, line 9
+ECHO: 3, 3, undef, undef, undef, [1, 2, 3, 4], [0, 2, 4, 6, 8, 10], ["a", "b", "c"]
+ECHO: 1, 3, 1, 8, 2.5, -1, 3, -3, -2, -1
+ECHO: 0.5, 0.5, 1, 30, 60, 45, 45, 1.41421, 1024, 2.71828, 0.693147, 2, 3
+ECHO: 5, [0, 0, 1], 15, [0.796543, 0.183435, 0.779691], [1], true, true, true, true, true
+WARNING: undefined operation (undefined < number) in file lang.scad, line 13
+ECHO: true, false, undef, false, false, true, true, false, false, false
+ECHO: false, true, true, true, true, true
+ECHO: 42, true, "function(x) (x * 2)"
+ECHO: [1, 2, 3, 0, 2, 4, 6, 8, 10], [0, -1, 2, -3, 4, -5], [[0, 10], [1, 9], [2, 8]]
+ECHO: 15, "ok", [2021, 1], true
+ECHO: 1e-10, 123457, 0.3, 0.333333, 100000, 1e+6, 1e+6, 1e+7, 1.41421, 0.00001, 0.0001, 0.000123457
+ECHO: [1, 2, 3, 1], [1, 2, 3, 1], 1, [0, 1, 0, 0], 4
+ECHO: "A", 65, "x1[1, "y"]undef", "tab	nl
+", "quote"", "é"
+ECHO: 1e+15, 1e+15, 6, nan, 1.07151e+301, -1.07151e+301

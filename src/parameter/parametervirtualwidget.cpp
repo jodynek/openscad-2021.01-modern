@@ -1,4 +1,5 @@
 #include "parametervirtualwidget.h"
+#include <QRegularExpression>
 
 
 ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *parameterobject, DescLoD descriptionLoD)
@@ -38,7 +39,7 @@ ParameterVirtualWidget::~ParameterVirtualWidget(){
 
 void ParameterVirtualWidget::setName(QString name) {
 	this->labelDescription->hide();
-	name.replace(QRegExp("([_]+)"), " ");
+	name.replace(QRegularExpression("_+"), " ");
 	this->labelParameter->setText(name);
 	this->labelInline->setText("");
 }

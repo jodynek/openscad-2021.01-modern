@@ -27,7 +27,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/format.hpp>
 #include <libxml/xmlreader.h>
 
@@ -41,7 +41,7 @@
 #include "polyline.h"
 #include "rect.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace libsvg {
 

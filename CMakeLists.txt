@@ -14,7 +14,7 @@
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.5)
 
 if(POLICY CMP0071)
   cmake_policy(SET CMP0071 OLD)
@@ -29,6 +29,7 @@ option(HEADLESS "Build without GUI frontend" OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
+option(ENABLE_TESTS "Build the regression test tools and register ctest tests (tests/)" ON)
 
 if(PROFILE)
   SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
@@ -68,7 +69,9 @@ file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
 # Stack size 8MB; github issue 116
 add_definitions(-DSTACKSIZE=8388608)
@@ -80,7 +83,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   endif()
 endif()
 
-set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options)
+set(BOOST_DIRECTLY_REQUIRED_LIBRARIES program_options)
 
 find_package(PkgConfig)
 
@@ -99,8 +102,12 @@ macro(find_graphics)
       message(STATUS "GLEW: Using target GLEW::GLEW")
       list(APPEND COMMON_LIBRARIES GLEW::GLEW)
 
-      find_path(OPENCSG_INCLUDE_DIRS opencsg/opencsg.h)
-      include_directories("${OPENCSG_INCLUDE_DIRS}/opencsg")
+      # vcpkg opencsg: 1.4.x installed include/opencsg/opencsg.h, 1.8.x installs include/opencsg.h
+      find_path(OPENCSG_INCLUDE_DIR NAMES opencsg.h PATH_SUFFIXES opencsg)
+      if(NOT OPENCSG_INCLUDE_DIR)
+        message(FATAL_ERROR "opencsg.h not found")
+      endif()
+      include_directories("${OPENCSG_INCLUDE_DIR}")
     else()
       find_package(GLEW REQUIRED)
       message(STATUS "GLEW_INCLUDE_DIR: ${GLEW_INCLUDE_DIR}")
@@ -142,15 +149,17 @@ endif()
 
 if (MSVC)
   # Flex lexer options
-  set(WINCOMPAT "--wincompat --nounistd")
+  set(OPENSCAD_FLEX_FLAGS --wincompat --nounistd)
   add_definitions(-D_USE_MATH_DEFINES)
 
   message("COMMON_LIBRARIES ${COMMON_LIBRARIES}")
   find_package(Eigen3 CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES Eigen3::Eigen)
 
-  set(Boost_USE_STATIC_LIBS TRUE)
-  find_package(Boost 1.36 REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES})
+  # vcpkg x64-windows ships Boost as DLLs; static variant is not installed.
+  set(Boost_USE_STATIC_LIBS FALSE)
+  # CONFIG: use BoostConfig.cmake (Boost >= 1.70 / vcpkg boost-cmake); CMake's FindBoost module is deprecated
+  find_package(Boost 1.36 REQUIRED CONFIG COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES})
   message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
   message("BOOST DIRS ${Boost_INCLUDE_DIRS}")
   include_directories(${Boost_INCLUDE_DIRS})
@@ -161,18 +170,19 @@ if (MSVC)
   include_directories(${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
   list(APPEND COMMON_LIBRARIES harfbuzz::harfbuzz)
 
-  find_package(unofficial-fontconfig CONFIG REQUIRED)
-  list(APPEND COMMON_LIBRARIES unofficial::fontconfig::fontconfig)
+  # vcpkg fontconfig no longer provides unofficial-fontconfig; use CMake's FindFontconfig (3.14+)
+  find_package(Fontconfig REQUIRED)
+  message(STATUS "Fontconfig: ${Fontconfig_VERSION}")
+  list(APPEND COMMON_LIBRARIES Fontconfig::Fontconfig)
 
-  find_package(unofficial-glib CONFIG REQUIRED)
-  include_directories(${GLIB2_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
 
   find_package(double-conversion CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES double-conversion::double-conversion)
 
-  find_library(GETTEXT_LIBRARY libintl)
-  list(APPEND COMMON_LIBRARIES ${GETTEXT_LIBRARY})
+  # libintl via CMake's FindIntl (vcpkg port gettext-libintl, or the system libc on Linux)
+  find_package(Intl REQUIRED)
+  message(STATUS "libintl: ${Intl_LIBRARIES}")
+  list(APPEND COMMON_LIBRARIES Intl::Intl)
 
   # call before setting local CMAKE_MODULE_PATH so we use VCPKG version of FindGLEW
   find_graphics()
@@ -214,10 +224,6 @@ else()
   message(STATUS "Fontconfig: ${FONTCONFIG_VERSION}")
   list(APPEND COMMON_LIBRARIES ${FONTCONFIG_LIBRARIES})
 
-  find_package(GLIB2 2.26 REQUIRED QUIET)
-  message(STATUS "Glib: ${GLIB2_VERSION}")
-  include_directories(${GLIB2_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES ${GLIB2_LIBRARIES})
 
   list(APPEND COMMON_LIBRARIES double-conversion)
 
@@ -235,7 +241,8 @@ message(STATUS "Freetype: ${FREETYPE_VERSION_STRING}")
 include_directories(${FREETYPE_INCLUDE_DIRS})
 list(APPEND COMMON_LIBRARIES ${FREETYPE_LIBRARIES})
 
-find_package(LibXml2 2.9 REQUIRED QUIET)
+# no version constraint: vcpkg's libxml2 config declares ExactVersion compatibility
+find_package(LibXml2 REQUIRED QUIET)
 message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 include_directories(${LIBXML2_INCLUDE_DIR})
 list(APPEND COMMON_LIBRARIES ${LIBXML2_LIBRARIES})
@@ -257,10 +264,16 @@ find_package(BISON REQUIRED QUIET)
 message(STATUS "Bison: ${BISON_VERSION}")
 
 if(NOT MSVC)
-  find_package(Lib3MF REQUIRED QUIET)
-  add_definitions(${LIB3MF_CFLAGS})
-  include_directories(${LIB3MF_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
+  # 3MF import/export through lib3mf when the development package is installed (optional)
+  find_package(Lib3MF QUIET)
+  if(LIB3MF_FOUND OR LIB3MF_LIBRARIES)
+    message(STATUS "Lib3MF: ${LIB3MF_VERSION} (3MF import/export enabled)")
+    add_definitions(${LIB3MF_CFLAGS})
+    include_directories(${LIB3MF_INCLUDE_DIRS})
+    list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
+  else()
+    message(STATUS "Lib3MF: not found (3MF import/export disabled)")
+  endif()
 endif()
 
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
@@ -277,59 +290,75 @@ endif()
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(src)
 
-FLEX_TARGET(openscad_lexer src/lexer.l ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lexer.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
-BISON_TARGET(openscad_parser src/parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/parser.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/parser.hxx COMPILE_FLAGS "-d -p parser")
-ADD_FLEX_BISON_DEPENDENCY(openscad_lexer openscad_parser)
+# Scanner/parser generation.
+# Explicit custom commands instead of FLEX_TARGET/BISON_TARGET so we can put them in a
+# Ninja job pool of size 1: winflexbison (win_flex/win_bison) uses fixed temp file names
+# in %TEMP% (~1_flex_N), and concurrent invocations clobber each other.
+set_property(GLOBAL APPEND PROPERTY JOB_POOLS flexbison=1)
+set(OPENSCAD_GEN_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-FLEX_TARGET(comment_lexer src/comment_lexer.l ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_lexer.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
-BISON_TARGET(comment_parser src/comment_parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_parser.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_parser.hxx COMPILE_FLAGS "-d -p comment_parser")
-ADD_FLEX_BISON_DEPENDENCY(comment_lexer comment_parser)
+function(openscad_add_bison NAME INPUT PREFIX OUTVAR)
+  set(out_cxx ${OPENSCAD_GEN_DIR}/${NAME}.cxx)
+  set(out_hxx ${OPENSCAD_GEN_DIR}/${NAME}.hxx)
+  add_custom_command(OUTPUT ${out_cxx} ${out_hxx}
+    COMMAND ${BISON_EXECUTABLE} -d -p ${PREFIX} --defines=${out_hxx} -o ${out_cxx} ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    JOB_POOL flexbison
+    COMMENT "[BISON] ${NAME}"
+    VERBATIM)
+  set(${OUTVAR} ${out_cxx} ${out_hxx} PARENT_SCOPE)
+endfunction()
+
+function(openscad_add_flex NAME INPUT OUTVAR)
+  set(out_cxx ${OPENSCAD_GEN_DIR}/${NAME}.cxx)
+  set(out_hxx ${OPENSCAD_GEN_DIR}/${NAME}.hxx)
+  add_custom_command(OUTPUT ${out_cxx} ${out_hxx}
+    COMMAND ${FLEX_EXECUTABLE} ${OPENSCAD_FLEX_FLAGS} --header-file=${out_hxx} -o${out_cxx} ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT} ${ARGN}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    JOB_POOL flexbison
+    COMMENT "[FLEX] ${NAME}"
+    VERBATIM)
+  set(${OUTVAR} ${out_cxx} ${out_hxx} PARENT_SCOPE)
+endfunction()
+
+openscad_add_bison(parser src/parser.y parser BISON_openscad_parser_OUTPUTS)
+openscad_add_flex(lexer src/lexer.l FLEX_openscad_lexer_OUTPUTS ${OPENSCAD_GEN_DIR}/parser.hxx)
+openscad_add_bison(comment_parser src/comment_parser.y comment_parser BISON_comment_parser_OUTPUTS)
+openscad_add_flex(comment_lexer src/comment_lexer.l FLEX_comment_lexer_OUTPUTS ${OPENSCAD_GEN_DIR}/comment_parser.hxx)
 
 if(NOT HEADLESS)
-  if (APPLE AND EXISTS /usr/local/opt/qt)
-    list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt")
-  endif()
-
+  # GUI: Qt 6 from the Qt online installer (CMAKE_PREFIX_PATH / QT6_ROOT points at <Qt>/6.x.y/<kit>)
   set(CMAKE_AUTOMOC ON)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
-  find_package(Qt5 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network REQUIRED QUIET)
-  message(STATUS "Qt5: ${Qt5_VERSION}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-  if (Qt5_POSITION_INDEPENDENT_CODE)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+  if(QT6_ROOT)
+    list(APPEND CMAKE_PREFIX_PATH "${QT6_ROOT}")
   endif()
+  find_package(Qt6 6.4 COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets Concurrent Network Multimedia REQUIRED)
+  message(STATUS "Qt6: ${Qt6_VERSION}")
+  add_definitions(-DUSE_QOPENGLWIDGET)
 
-  if (("${Qt5_VERSION}" VERSION_EQUAL "5.4") OR ("${Qt5_VERSION}" VERSION_GREATER "5.4"))
-    add_definitions(-DUSE_QOPENGLWIDGET)
-  endif()
-
-  find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
-  message(STATUS "QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
+  find_package(QScintilla 2.11 REQUIRED)   # cmake/Modules/FindQScintilla.cmake
+  message(STATUS "QScintilla: ${QSCINTILLA_VERSION_STRING}")
   add_definitions(-DUSE_SCINTILLA_EDITOR)
   add_definitions(-DENABLE_MDI)
 
-  find_package(Qt5DBus QUIET)
-  if (Qt5DBus_FOUND)
-    message(STATUS "DBus input driver enabled")
-    add_definitions(-DENABLE_DBUS)
-    set(INPUT_DRIVER_DBUS_SOURCES src/input/DBusInputDriver.cc)
-    qt5_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
-    qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
-  else()
-    message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
+  if(UNIX AND NOT APPLE)
+    find_package(Qt6 COMPONENTS DBus QUIET)
+    if(Qt6DBus_FOUND)
+      message(STATUS "DBus input driver enabled")
+      add_definitions(-DENABLE_DBUS)
+      set(INPUT_DRIVER_DBUS_SOURCES src/input/DBusInputDriver.cc)
+      qt_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
+      qt_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
+    else()
+      message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
+    endif()
   endif()
-
-  find_package(Qt5Gamepad QUIET)
-  if (Qt5Gamepad_FOUND)
-    message(STATUS "Gamepad input driver enabled")
-    set(GUI_SOURCES ${GUI_SOURCES} src/input/QGamepadInputDriver.cc)
-    add_definitions(-DENABLE_QGAMEPAD)
-  else()
-    message(STATUS "Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
-  endif()
-
+  # Qt Gamepad does not exist in Qt 6; the QGamepad input driver is not built.
 endif()
 
 
@@ -345,7 +374,12 @@ endif()
 #
 # Version
 #
-string(TIMESTAMP VERSION "%Y.%m.%d")
+set(OPENSCAD_VERSION "" CACHE STRING "Version shown by the program (e.g. 2021.01); empty = build date")
+if(OPENSCAD_VERSION)
+  set(VERSION ${OPENSCAD_VERSION})
+else()
+  string(TIMESTAMP VERSION "%Y.%m.%d")
+endif()
 string(REPLACE "-" ";" SPLITVERSION ${VERSION})
 list(GET SPLITVERSION 0 OPENSCAD_SHORTVERSION)
 string(REGEX MATCHALL "^[0-9]+|[0-9]+|[0-9]+$" VERSIONLIST "${OPENSCAD_SHORTVERSION}")
@@ -667,6 +701,21 @@ endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
 
+# Resource folders the program looks up next to the executable (PlatformUtils::lookupResourcesPath):
+# copy them into the build output so a build tree is self-contained (and looks like a release layout).
+set(OPENSCAD_RESOURCE_DIRS color-schemes examples fonts libraries templates)
+foreach(_res ${OPENSCAD_RESOURCE_DIRS})
+  add_custom_command(TARGET OpenSCAD POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/${_res}" "$<TARGET_FILE_DIR:OpenSCAD>/${_res}"
+    COMMENT "copying resource folder ${_res}")
+endforeach()
+if(WIN32)
+  # fontconfig has no system configuration on Windows; FontCache uses fonts/fonts.conf when present
+  add_custom_command(TARGET OpenSCAD POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_SOURCE_DIR}/fonts/fonts.conf.windows" "$<TARGET_FILE_DIR:OpenSCAD>/fonts/fonts.conf"
+    COMMENT "installing fonts/fonts.conf for Windows")
+endif()
+
 if(APPLE)
   set_target_properties(OpenSCAD PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist.in
@@ -681,9 +730,17 @@ elseif(UNIX)
     OUTPUT_NAME openscad
   )
 elseif(MSVC)
-  set_target_properties(OpenSCAD PROPERTIES
-    LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:8388608"
-  )
+  if(HEADLESS)
+    # command-line tool: console subsystem so output is visible in cmd/PowerShell
+    set_target_properties(OpenSCAD PROPERTIES
+      OUTPUT_NAME openscad
+      LINK_FLAGS "-subsystem:console -stack:8388608"
+    )
+  else()
+    set_target_properties(OpenSCAD PROPERTIES
+      LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:8388608"
+    )
+  endif()
 endif()
 
 if(ENABLE_SPNAV)
@@ -691,12 +748,41 @@ if(ENABLE_SPNAV)
 endif()
 
 target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES} ${PLATFORM_LIBS})
+# std::filesystem lives in a separate library on GCC < 9
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
+  target_link_libraries(OpenSCAD PRIVATE stdc++fs)
+endif()
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
+  target_link_libraries(OpenSCAD PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Concurrent Qt6::Network Qt6::Multimedia QScintilla::QScintilla)
+  if(Qt6DBus_FOUND)
+    target_link_libraries(OpenSCAD PRIVATE Qt6::DBus)
+  endif()
+  if(WIN32)
+    # copy the Qt runtime (DLLs, platform plugin, ...) and the QScintilla DLL next to the executable
+    get_target_property(_qmake_location Qt6::qmake IMPORTED_LOCATION)
+    get_filename_component(_qt_bin_dir "${_qmake_location}" DIRECTORY)
+    find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS "${_qt_bin_dir}")
+    set(_deploy_binaries "$<TARGET_FILE:OpenSCAD>")
+    if(QSCINTILLA_DLL)
+      # the QScintilla DLL has Qt dependencies of its own (Qt6PrintSupport), so windeployqt must scan it too
+      get_filename_component(_qsci_dll_name "${QSCINTILLA_DLL}" NAME)
+      add_custom_command(TARGET OpenSCAD POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${QSCINTILLA_DLL}" "$<TARGET_FILE_DIR:OpenSCAD>"
+        COMMENT "copying QScintilla DLL")
+      list(APPEND _deploy_binaries "$<TARGET_FILE_DIR:OpenSCAD>/${_qsci_dll_name}")
+    endif()
+    if(WINDEPLOYQT_EXECUTABLE)
+      add_custom_command(TARGET OpenSCAD POST_BUILD
+        COMMAND "${WINDEPLOYQT_EXECUTABLE}" --no-translations --no-compiler-runtime --no-opengl-sw ${_deploy_binaries}
+        COMMENT "windeployqt: copying the Qt runtime next to $<TARGET_FILE_NAME:OpenSCAD>")
+    endif()
+  endif()
 endif()
 
 if(INFO)
   include(info)
 endif()
 
-add_subdirectory(tests)
+if(ENABLE_TESTS)
+  add_subdirectory(tests)
+endif()

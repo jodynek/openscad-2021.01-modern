@@ -13,7 +13,8 @@ using Eigen::Vector3i;
 
 #ifdef _MSC_VER
   #include <Eigen/StdVector> // https://eigen.tuxfamily.org/dox/group__TopicStlContainers.html
-  #if !EIGEN_HAS_CXX11_CONTAINERS
+  // EIGEN_HAS_CXX11_CONTAINERS was removed in Eigen 5 (C++11 containers are always supported there)
+  #if defined(EIGEN_HAS_CXX11_CONTAINERS) && !EIGEN_HAS_CXX11_CONTAINERS
     #warning "Eigen has detected no support for CXX11 containers and has redefined std::vector"
   #endif
   typedef std::vector<Vector2d, Eigen::aligned_allocator<Vector2d> > VectorOfVector2d;

@@ -44,7 +44,7 @@
 
 #include"boost-utils.h"
 /*Unicode support for string lengths and array accesses*/
-#include <glib.h>
+#include "utf8utils.h"
 // hash double
 #include "linalg.h"
 
@@ -516,7 +516,7 @@ Value builtin_ord(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 
 	const str_utf8_wrapper &arg_str = arg.toStrUtf8Wrapper();
 	const char *ptr = arg_str.c_str();
-	if (!g_utf8_validate(ptr, -1, NULL)) {
+	if (!utf8::validate(ptr)) {
 		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"ord() argument '%1$s' is not a valid utf8 string",arg_str.toString());
 		return Value::undefined.clone();
 	}
@@ -525,7 +525,7 @@ Value builtin_ord(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 		return Value::undefined.clone();
 	}
 
-	const gunichar ch = g_utf8_get_char(ptr);
+	const std::uint32_t ch = utf8::get_char(ptr);
 	return Value((double)ch);
 }
 
@@ -649,10 +649,10 @@ static VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &t
 	for (size_t i = 0; i < findThisSize; ++i) {
 		unsigned int matchCount = 0;
 		VectorType resultvec;
-		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
+		const char *ptr_ft = utf8::offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; ++j) {
-			const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), j);
-			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+			const char *ptr_st = utf8::offset_to_pointer(table.c_str(), j);
+			if (ptr_ft && ptr_st && (utf8::get_char(ptr_ft) == utf8::get_char(ptr_st)) ) {
 				matchCount++;
 				if (num_returns_per_match == 1) {
 					returnvec.emplace_back(double(j));
@@ -666,8 +666,8 @@ static VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &t
 			}
 		}
 		if (matchCount == 0) {
-			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
+			char utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
+			if (ptr_ft) utf8::strncpy_chars(utf8_of_cp, ptr_ft, 1);
 		}
 		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
 			returnvec.emplace_back(std::move(resultvec));
@@ -687,15 +687,18 @@ static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 	for (size_t i = 0; i < findThisSize; ++i) {
 		unsigned int matchCount = 0;
 		VectorType resultvec;
-		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
+		const char *ptr_ft = utf8::offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; ++j) {
 			const auto &entryVec = table[j].toVector();
 			if (entryVec.size() <= index_col_num) {
 				LOG(message_group::Warning,loc,ctx->documentPath(),"Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3$s",j,(index_col_num + 1),table[j].toEchoString());
 				return VectorType();
 			}
-			const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num].toString().c_str(), 0);
-			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+			// keep the string alive: toString() returns a temporary, taking c_str() of it was a dangling pointer
+			// (undefined behaviour; on Windows the lookup silently never matched)
+			const std::string entryStr = entryVec[index_col_num].toString();
+			const char *ptr_st = utf8::offset_to_pointer(entryStr.c_str(), 0);
+			if (ptr_ft && ptr_st && (utf8::get_char(ptr_ft) == utf8::get_char(ptr_st)) ) {
 				matchCount++;
 				if (num_returns_per_match == 1) {
 					returnvec.emplace_back(double(j));
@@ -709,8 +712,8 @@ static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 			}
 		}
 		if (matchCount == 0) {
-			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
+			char utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
+			if (ptr_ft) utf8::strncpy_chars(utf8_of_cp, ptr_ft, 1);
 			LOG(message_group::Warning,loc,ctx->documentPath(),"search term not found: \"%1$s\"",utf8_of_cp);
 		}
 		if (num_returns_per_match == 0 || num_returns_per_match > 1) {

@@ -1,0 +1,23 @@
+// Value semantics regression: arithmetic, comparison, vectors, ranges, strings, undef, functions
+a = 3; b = 4.5; s = "abc"; v = [1, 2, 3]; r = [0 : 2 : 10]; u = undef; t = true;
+echo(a + b, a - b, a * b, a / b, a % b, a ^ 2, -a, !t, t && false, t || false);
+echo(a < b, a > b, a <= b, a >= b, a == 3, a != 3, s == "abc", s != "abd", v == [1,2,3], v != [1,2,3]);
+echo(v + [1,1,1], v - [1,1,1], v * 2, 2 * v, v / 2, v * v, [[1,2],[3,4]] * [1,1], [1,2] * [[1,2],[3,4]], -v);
+echo(s + 1, s * 2, v + 1, u + 1, t + 1, 1 / 0, -1 / 0, 0 / 0, 1e308 * 10);
+echo(str(a, b, s, v, r, u, t), str(1/3), str(-0.0), str(1e21), str(123456789012345678));
+echo(v[0], v[2], v[3], v[-1], s[0], s[5], r[0], r[1], r[2], r[3], u[0], a[0]);
+echo(len(v), len(s), len(r), len(u), len(a), concat(v, [4]), [for (i = r) i], [for (c = s) c]);
+echo(min(v), max(v), min(1, 2), max([5, 2, 8]), abs(-2.5), sign(-3), round(2.5), round(-2.5), floor(-1.1), ceil(-1.1));
+echo(sin(30), cos(60), tan(45), asin(0.5), acos(0.5), atan(1), atan2(1, 1), sqrt(2), pow(2, 10), exp(1), ln(2), log(100), log(2, 8));
+echo(norm([3, 4]), cross([1,0,0],[0,1,0]), lookup(1.5, [[1, 10], [2, 20]]), rands(0, 1, 3, 42), search(2, v), is_undef(u), is_list(v), is_num(a), is_bool(t), is_string(s));
+echo(u == undef, u != undef, u < 1, u == 0, u == false, [] == [], [1] == [1.0], "1" == 1, true == 1, 1 == true);
+echo(v == [1, 2], [1, 2] < [1, 3], "a" < "b", "B" < "a", [1, "a"] == [1, "a"], [1, [2, 3]] == [1, [2, 3]]);
+f = function(x) x * 2;
+echo(f(21), is_function(f), str(f));
+echo([each v, each r], [for (i = [0 : 5]) if (i % 2 == 0) i else -i], [for (i = 0, j = 10; i < 3; i = i + 1, j = j - 1) [i, j]]);
+echo(let(x = 5, y = x * 2) x + y, assert(true) "ok", version(), version_num() > 0);
+echo(1e-10, 123456.789, 0.1 + 0.2, 1/3, 100000, 1000000, 1e6, 1e7, 2^0.5, 1e-5, 1e-4, 0.000123456789);
+m = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
+echo(m * [1,2,3,1], [1,2,3,1] * m, m[1][1], m[1], len(m));
+echo(chr(65), ord("A"), str("x", 1, [1, "y"], undef), "tab\tnl\n", "quote\"", "é");
+echo(ceil(1e15), floor(1e15), 1e15 % 7, 7 % 0, 2 ^ 1000, -(2 ^ 1000));

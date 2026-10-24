@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include <boost/filesystem.hpp>
-namespace fs=boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 #define STACK_BUFFER_SIZE (128 * 1024)
 #define STACK_LIMIT_DEFAULT (STACKSIZE - STACK_BUFFER_SIZE)

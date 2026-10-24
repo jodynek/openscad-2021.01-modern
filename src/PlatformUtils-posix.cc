@@ -6,15 +6,15 @@
 #include <sys/resource.h>
 #include <sys/utsname.h>
 
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "version.h"
 #include "PlatformUtils.h"
 
-namespace fs=boost::filesystem;
+namespace fs = std::filesystem;
 
 static std::mutex user_agent_mutex;
 
@@ -57,9 +57,9 @@ static std::string getXdgUserDir(const std::string &dir)
 	const fs::path config_dir = getXdgConfigDir() / "user-dirs.dirs";
 	const std::string user_dirs{readText(config_dir.generic_string())};
 
-	boost::smatch results;
-	boost::regex documents_dir{"^" + dir + "=\"[$]HOME/([^\"]+)\""};
-	if (boost::regex_search(user_dirs, results, documents_dir)) {
+	std::smatch results;
+	const std::regex documents_dir{"^" + dir + "=\"[$]HOME/([^\"]+)\""};
+	if (std::regex_search(user_dirs, results, documents_dir)) {
 		return results[1];
 	}
 
@@ -155,9 +155,9 @@ static const std::string checkOsRelease()
 {
     std::string os_release(readText("/etc/os-release"));
 
-    boost::smatch results;
-    boost::regex pretty_name("^PRETTY_NAME=\"([^\"]+)\"");
-    if (boost::regex_search(os_release, results, pretty_name)) {
+    std::smatch results;
+    const std::regex pretty_name("^PRETTY_NAME=\"([^\"]+)\"");
+    if (std::regex_search(os_release, results, pretty_name)) {
 	return results[1];
     }
 
@@ -168,10 +168,10 @@ static const std::string checkEtcIssue()
 {
     std::string issue(readText("/etc/issue"));
 
-    boost::regex nl("\n.*$");
-    issue = boost::regex_replace(issue, nl, "");
-    boost::regex esc("\\\\.");
-    issue = boost::regex_replace(issue, esc, "");
+    const std::regex nl("\n.*$");
+    issue = std::regex_replace(issue, nl, "");
+    const std::regex esc("\\\\.");
+    issue = std::regex_replace(issue, esc, "");
     boost::algorithm::trim(issue);
     
     return issue;

@@ -94,7 +94,7 @@ ExperimentalFeatureException::ExperimentalFeatureException(const std::string &wh
 
 }
 
-ExperimentalFeatureException::~ExperimentalFeatureException() throw()
+ExperimentalFeatureException::~ExperimentalFeatureException() noexcept
 {
 
 }

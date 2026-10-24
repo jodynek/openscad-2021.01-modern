@@ -33,9 +33,9 @@
 #include "ModuleInstantiation.h"
 #include "builtin.h"
 #include "printutils.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "boost-utils.h"
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 // $children is not a config_variable. config_variables have dynamic scope, 
 // meaning they are passed down the call chain implicitly.

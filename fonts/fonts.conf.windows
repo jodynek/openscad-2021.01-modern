@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<!--
+  fontconfig configuration used by OpenSCAD on Windows.
+  The build copies this file to <exe dir>/fonts/fonts.conf; FontCache then points
+  FONTCONFIG_PATH at that folder. The bundled Liberation fonts are added by the
+  program itself, this file only has to make the Windows fonts visible and give
+  fontconfig a cache directory.
+-->
+<fontconfig>
+  <dir>WINDOWSFONTDIR</dir>
+  <dir>WINDOWSUSERFONTDIR</dir>
+  <cachedir>LOCAL_APPDATA_FONTCONFIG_CACHE</cachedir>
+  <config>
+    <rescan><int>30</int></rescan>
+  </config>
+</fontconfig>

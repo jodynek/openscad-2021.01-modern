@@ -8,7 +8,7 @@
 class EvaluationException : public std::runtime_error {
 public:
 	EvaluationException(const std::string &what_arg) : std::runtime_error(what_arg) {}
-	~EvaluationException() throw() {}
+	~EvaluationException() noexcept {}
 public:
 	int traceDepth=12;
 };
@@ -16,7 +16,7 @@ public:
 class AssertionFailedException : public EvaluationException {
 public:
 	AssertionFailedException(const std::string &what_arg, const Location &loc)  : EvaluationException(what_arg), loc(loc) {}
-	~AssertionFailedException() throw() {}
+	~AssertionFailedException() noexcept {}
 	
 public:
 	Location loc;
@@ -27,7 +27,7 @@ public:
 	static RecursionException create(const std::string &recursiontype, const std::string &name, const Location &loc) {
 		return RecursionException{STR("ERROR: Recursion detected calling " << recursiontype << " '" << name << "'"), loc};
 	}
-	~RecursionException() throw() {}
+	~RecursionException() noexcept {}
 
 public:
 	Location loc;
@@ -41,7 +41,7 @@ public:
 	static LoopCntException create(const std::string &type, const Location &loc) {
 		return LoopCntException{STR("ERROR: " << type << " loop counter exceeded limit"), loc};
 	}
-	~LoopCntException() throw() {}
+	~LoopCntException() noexcept {}
 
 public:
 	Location loc;
@@ -53,5 +53,5 @@ private:
 class HardWarningException : public EvaluationException {
 public:
 	HardWarningException(const std::string &what_arg) : EvaluationException(what_arg) {}
-	~HardWarningException() throw() {}
+	~HardWarningException() noexcept {}
 };

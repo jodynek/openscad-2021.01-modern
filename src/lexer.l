@@ -28,7 +28,7 @@
 
 %{
 
-#include <glib.h>
+#include "utf8utils.h"
 #include "handle_dep.h"
 #include "printutils.h"
 #include "parsersettings.h"
@@ -37,9 +37,9 @@
 #include "FileModule.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "boost-utils.h"
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 //isatty for visual c++ and mingw-cross-env
 #if defined __WIN32__ && ! defined _MSC_VER
@@ -274,9 +274,9 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
 void to_utf8(const char *str, char *out)
 {
     memset(out, 0, 8);
-    const gunichar c = strtoul(str, NULL, 16);
-    if (g_unichar_validate(c) && (c != 0)) {
-        g_unichar_to_utf8(c, out);
+    const std::uint32_t c = static_cast<std::uint32_t>(strtoul(str, NULL, 16));
+    if (utf8::unichar_validate(c) && (c != 0)) {
+        utf8::encode(c, out);
     } else {
         out[0] = ' ';
     }

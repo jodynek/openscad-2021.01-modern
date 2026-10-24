@@ -4,9 +4,9 @@
 #include "expression.h"
 #include "exceptions.h"
 #include "printutils.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "boost-utils.h"
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 ModuleInstantiation::~ModuleInstantiation()
 {

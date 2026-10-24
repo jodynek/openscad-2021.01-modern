@@ -47,11 +47,11 @@
 #include "memory.h"
 #include <sstream>
 #include <stack>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "boost-utils.h"
 #include "feature.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #define YYMAXDEPTH 20000
 #define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())

@@ -37,7 +37,7 @@
 #include <unordered_map>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <algorithm>
 #include <sstream>
 #include <map>
@@ -49,7 +49,7 @@
 #include "degree_trig.h"
 
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 /*! \class DxfData
 
