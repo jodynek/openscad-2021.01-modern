@@ -10,7 +10,8 @@
 param(
     [string]$Exe = "$PSScriptRoot\..\..\build\x64-headless\openscad.exe",
     [string]$GuiExe = "$PSScriptRoot\..\..\build\x64-gui\OpenSCAD.exe",
-    [switch]$Gui   # also start the Qt GUI with an example and check that its main window appears
+    [switch]$Gui,        # also start the Qt GUI with an example and check that its main window appears
+    [switch]$SkipOpenGL  # CI runners without a GPU/desktop: skip the PNG export (offscreen OpenGL) and GUI checks
 )
 $ErrorActionPreference = "Continue"
 $Exe = (Resolve-Path $Exe).Path
@@ -50,12 +51,14 @@ foreach ($scad in $geom.Keys) {
 }
 
 # PNG export exercises the offscreen OpenGL context
+if ($SkipOpenGL) { Write-Host "SKIP logo.png export (-SkipOpenGL)" } else {
 $png = Join-Path $tmp "logo.png"
 & $Exe -o $png --imgsize=400,300 "..\..\examples\Basics\logo.scad" 2>$null
 if ((Test-Path $png) -and (Get-Item $png).Length -gt 1000) { Write-Host "PASS logo.png export" } else { Write-Host "FAIL logo.png export"; $failed++ }
+}
 
 # GUI: the window must come up and stay alive (Qt runtime, QScintilla, OpenGL preview)
-if ($Gui) {
+if ($Gui -and -not $SkipOpenGL) {
     if (Test-Path $GuiExe) {
         $p = Start-Process -FilePath (Resolve-Path $GuiExe).Path -ArgumentList "$dir\..\..\examples\Basics\logo.scad" -PassThru
         $title = ""

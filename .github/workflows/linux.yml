@@ -1,0 +1,39 @@
+name: Linux build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (apt)
+        run: sudo bash tools/linux-deps.sh
+
+      - name: Configure and build (headless)
+        run: |
+          cmake --preset linux-headless
+          cmake --build --preset linux-headless --parallel
+
+      - name: Smoke tests
+        run: bash tests/smoke/run-smoke.sh build/linux-headless/openscad
+
+      - name: Configure and build (GUI, Qt 6 from the distribution)
+        run: |
+          cmake --preset linux-release
+          cmake --build --preset linux-release --parallel
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: openscad-linux-x86_64-ubuntu-24.04
+          path: |
+            build/linux-headless/openscad
+            build/linux-release/openscad

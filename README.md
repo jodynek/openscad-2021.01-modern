@@ -1,5 +1,8 @@
 # OpenSCAD 2021.01 – modernized build
 
+[![Windows build](https://github.com/jodynek/openscad-2021.01-modern/actions/workflows/windows.yml/badge.svg)](https://github.com/jodynek/openscad-2021.01-modern/actions/workflows/windows.yml)
+[![Linux build](https://github.com/jodynek/openscad-2021.01-modern/actions/workflows/linux.yml/badge.svg)](https://github.com/jodynek/openscad-2021.01-modern/actions/workflows/linux.yml)
+
 *Česká verze: [README.cs.md](README.cs.md) · Developer documentation: [DEVELOPMENT.md](DEVELOPMENT.md)*
 
 OpenSCAD is a script-based 3D CAD modeller: you describe a part in the OpenSCAD language,

@@ -124,6 +124,24 @@ a redistributable a skript přeloží; výstup je
 `build/installer/OpenSCAD-<verze>-modern-win64-setup.exe`. Tichá instalace a odinstalace jsou
 standardní přepínače Inno (`/VERYSILENT /NORESTART`, `/CURRENTUSER`).
 
+### 4.3d Průběžná integrace a podepisování kódu
+
+`.github/workflows/windows.yml` (windows-latest, Visual Studio 2022) spouští `build-msvc.ps1`
+pro `x64-headless` a `x64-gui`, smoke testy (`-SkipOpenGL`: runner nemá použitelný OpenGL ani
+desktop), `installer/build-installer.ps1` a nahraje instalátor jako artefakt; při tagu `v*`
+také vytvoří GitHub release s instalátorem. Binárky vcpkg jsou v Actions cache
+(`VCPKG_BINARY_SOURCES=x-gha`), Qt a QScintilla v `actions/cache`, takže jen první běh trvá
+zhruba hodinu. `.github/workflows/linux.yml` (ubuntu-24.04) nainstaluje apt balíčky, přeloží
+oba linuxové presety a spustí `tests/smoke/run-smoke.sh`.
+
+**Podepisování kódu** je připravené pro [SignPath Foundation](https://signpath.org/foundation)
+(zdarma pro open source): pokud má repozitář secret `SIGNPATH_API_TOKEN` a proměnné
+`SIGNPATH_ORGANIZATION_ID`, `SIGNPATH_PROJECT_SLUG`, `SIGNPATH_POLICY_SLUG`, Windows workflow
+po buildu odešle artefakt s instalátorem do SignPath a zveřejní podepsanou kopii (artefakt
+`*-signed` a asset release). Bez nich se krok přeskočí a zveřejní se nepodepsaný instalátor.
+Alternativy jsou Azure Trusted Signing nebo klasický OV/EV certifikát přes direktivu
+`SignTool` v Inno Setupu a `signtool.exe` na obou exe před zabalením.
+
 ### 4.4 Nástroje mimo vcpkg
 
 `tools/winflexbison/` – flex 2.6.4 a bison 3.8.2 pro Windows (lexxmark/winflexbison 2.5.25).

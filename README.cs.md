@@ -1,5 +1,8 @@
 # OpenSCAD 2021.01 – modernizovaný build
 
+[![Windows build](https://github.com/jodynek/openscad-2021.01-modern/actions/workflows/windows.yml/badge.svg)](https://github.com/jodynek/openscad-2021.01-modern/actions/workflows/windows.yml)
+[![Linux build](https://github.com/jodynek/openscad-2021.01-modern/actions/workflows/linux.yml/badge.svg)](https://github.com/jodynek/openscad-2021.01-modern/actions/workflows/linux.yml)
+
 *English version: [README.md](README.md) · Dokumentace pro vývojáře: [DEVELOPMENT.cs.md](DEVELOPMENT.cs.md)*
 
 OpenSCAD je skriptový 3D CAD: díl popíšete v jazyce OpenSCAD, program ho vyhodnotí pomocí

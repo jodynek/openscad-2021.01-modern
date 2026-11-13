@@ -11,6 +11,9 @@
 #ifndef HeadlessDir
   #define HeadlessDir "..\build\x64-headless"
 #endif
+#ifndef VCToolsetMinor
+  #define VCToolsetMinor 44
+#endif
 #define AppName "OpenSCAD"
 #define AppExe "OpenSCAD.exe"
 #define AppUrl "https://github.com/jodynek/openscad-2021.01-modern"
@@ -108,7 +111,7 @@ Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags
 // --- Visual C++ runtime check: needs the 14.x runtime at least as new as the toolset used for the build ---
 const
   VCRuntimeKey = 'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64';
-  NeededMinor = 51;   // MSVC 14.51 (Visual Studio 2026)
+  NeededMinor = {#VCToolsetMinor};   // 14.<minor> toolset the binaries were built with (passed by build-installer.ps1)
 
 function VCRedistNeeded: Boolean;
 var

@@ -126,6 +126,25 @@ bundles `vc_redist.x64.exe` from the Visual Studio installation, run only when t
 the output is `build/installer/OpenSCAD-<version>-modern-win64-setup.exe`. Silent install and
 uninstall are the standard Inno switches (`/VERYSILENT /NORESTART`, `/CURRENTUSER`).
 
+### 4.3d Continuous integration and code signing
+
+`.github/workflows/windows.yml` (windows-latest, Visual Studio 2022) runs `build-msvc.ps1` for
+`x64-headless` and `x64-gui`, the smoke tests (`-SkipOpenGL`: the runner has no usable OpenGL
+or desktop), `installer/build-installer.ps1`, and uploads the installer as an artifact; on a
+`v*` tag it also creates the GitHub release with the installer attached. vcpkg binaries live
+in the Actions cache (`VCPKG_BINARY_SOURCES=x-gha`), Qt and QScintilla in `actions/cache`,
+so only the first run takes about an hour. `.github/workflows/linux.yml` (ubuntu-24.04)
+installs the apt packages, builds both Linux presets and runs `tests/smoke/run-smoke.sh`.
+
+**Code signing** is prepared for [SignPath Foundation](https://signpath.org/foundation) (free
+for open source): when the repository has the secret `SIGNPATH_API_TOKEN` and the variables
+`SIGNPATH_ORGANIZATION_ID`, `SIGNPATH_PROJECT_SLUG`, `SIGNPATH_POLICY_SLUG`, the Windows
+workflow submits the installer artifact to SignPath after the build and publishes the signed
+copy (`*-signed` artifact and the release asset). Without them the step is skipped and the
+unsigned installer is published. Alternatives are Azure Trusted Signing or a classic OV/EV
+certificate used through Inno Setup's `SignTool` directive and `signtool.exe` on the two
+executables before packaging.
+
 ### 4.4 Tools outside vcpkg
 
 `tools/winflexbison/` – flex 2.6.4 and bison 3.8.2 for Windows (lexxmark/winflexbison 2.5.25).

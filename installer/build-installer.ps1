@@ -46,11 +46,17 @@ if (-not $VCRedist) {
     }
 }
 if ($VCRedist -and (Test-Path $VCRedist)) { Write-Host "VC++ redistributable: $VCRedist" } else { Write-Warning "vc_redist.x64.exe not found - the installer will not bundle the Visual C++ runtime"; $VCRedist = "" }
+# minimum runtime version the binaries need = the toolset they were built with (14.<minor>)
+$toolsetMinor = 0
+if ($VCRedist) { $m = [regex]::Match($VCRedist, "MSVC\\14\.(\d+)\."); if ($m.Success) { $toolsetMinor = [int]$m.Groups[1].Value } }
+if ($toolsetMinor -eq 0 -and $env:VCToolsVersion -match "^14\.(\d+)") { $toolsetMinor = [int]$Matches[1] }
+if ($toolsetMinor -gt 0) { Write-Host "VC++ toolset: 14.$toolsetMinor" }
 
 # --- compile ---
 $args = @("/DAppVersion=$AppVersion", "/DBuildDir=$BuildDir")
 if ($HeadlessDir) { $args += "/DHeadlessDir=$HeadlessDir" }
 if ($VCRedist) { $args += "/DVCRedist=$VCRedist" }
+if ($toolsetMinor -gt 0) { $args += "/DVCToolsetMinor=$toolsetMinor" }
 $args += "$PSScriptRoot\openscad.iss"
 Write-Host "ISCC $($args -join ' ')"
 & $iscc @args

@@ -42,8 +42,9 @@ if (Test-Path "$kit\lib\qscintilla2_qt6.lib") {
     exit 0
 }
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-$vsPath = & $vswhere -version "[18.0,19.0)" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath | Select-Object -First 1
-if (-not $vsPath) { throw "Visual Studio 2026 (v18) with C++ tools not found." }
+# Visual Studio 2022 (v17) or 2026 (v18), newest first
+$vsPath = & $vswhere -latest -version "[17.0,19.0)" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath | Select-Object -First 1
+if (-not $vsPath) { throw "Visual Studio 2022/2026 with the C++ workload not found." }
 Import-Module "$vsPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
 Enter-VsDevShell -VsInstallPath $vsPath -DevCmdArguments "-arch=amd64 -host_arch=amd64" -SkipAutomaticLocation
 
