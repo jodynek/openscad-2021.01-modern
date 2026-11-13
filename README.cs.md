@@ -100,6 +100,34 @@ souborů `.scad` a volitelně přidání do PATH, a obsahuje Visual C++ runtime 
 když chybí). Tichá instalace: `setup.exe /VERYSILENT /NORESTART` (`/CURRENTUSER` instaluje
 pro uživatele bez práv správce).
 
+## Code signing policy (zásady podepisování kódu)
+
+Free code signing provided by [SignPath.io](https://signpath.io), certificate by
+[SignPath Foundation](https://signpath.org).
+
+Windows releasy sestavuje ze zdrojů tohoto repozitáře veřejný
+[GitHub Actions workflow](.github/workflows/windows.yml) a podepisují se až po ručním schválení
+tohoto konkrétního buildu. Podpis tedy dokládá, že instalátor pochází z tohoto repozitáře beze
+změn. Binárky mají ve vlastnostech souboru název produktu `OpenSCAD 2021.01 Modern` a verzi
+releasu. Instalátory zveřejněné před přijetím projektu do programu SignPath Foundation jsou
+nepodepsané.
+
+**Role v týmu**
+
+* Committeři a reviewery: [Petr Jodas (jodynek)](https://github.com/jodynek), vlastník
+  repozitáře. Pull requesty dalších přispěvatelů kontroluje a slučuje vlastník.
+* Schvalovatelé: [Petr Jodas (jodynek)](https://github.com/jodynek) schvaluje každou žádost
+  o podpis.
+
+**Ochrana soukromí**
+
+Program nesbírá žádná data o uživateli a neobsahuje telemetrii, hlášení pádů ani kontrolu
+aktualizací. K síti se připojuje pouze na výslovnou žádost uživatele: když uživatel zvolí
+*3D Print*, GUI stáhne veřejný seznam tiskových služeb z `files.openscad.org`, a model se do
+tiskové služby nebo na server OctoPrint odešle až po potvrzení v dialogu.
+
+Příkazový `openscad-cli.exe` síť nepoužívá vůbec.
+
 ## Kompilace na Linuxu (Ubuntu 24.04 / Debian 12)
 
 Vše z distribučních balíčků, bez vcpkg:

@@ -33,6 +33,7 @@ testdata/svg/viewbox/viewbox_*.svg
 /*.obj
 /*.rcad
 /*.xml
+!/org.openscad.OpenSCAD.xml
 /*.dat
 /*.gcode
 /*.py

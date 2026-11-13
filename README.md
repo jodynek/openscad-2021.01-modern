@@ -102,6 +102,34 @@ the `.scad` file association and an optional PATH entry, and bundles the Visual 
 (installed only when missing). Silent install: `setup.exe /VERYSILENT /NORESTART`
 (`/CURRENTUSER` installs per user without administrator rights).
 
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://signpath.io), certificate by
+[SignPath Foundation](https://signpath.org).
+
+Windows releases are built from the sources in this repository by the public
+[GitHub Actions workflow](.github/workflows/windows.yml) and signed only after a manual
+approval of that exact build, so a signature proves that the installer came from this
+repository unmodified. The binaries carry the product name `OpenSCAD 2021.01 Modern` and the
+release version in their file properties. Installers published before the project was accepted
+into the SignPath Foundation programme are unsigned.
+
+**Team roles**
+
+* Committers and reviewers: [Petr Jodas (jodynek)](https://github.com/jodynek), the repository
+  owner. Pull requests from other contributors are reviewed and merged by the owner.
+* Approvers: [Petr Jodas (jodynek)](https://github.com/jodynek) approves every signing request.
+
+**Privacy policy**
+
+This program does not collect user data and does not contain telemetry, crash reporting or
+update checks. It connects to the network only at the explicit request of the user: when
+the user chooses *3D Print* the GUI downloads the public list of print services from
+`files.openscad.org`, and a design is uploaded to a print service or to an OctoPrint server
+only after the user confirms it in the dialog.
+
+The command-line `openscad-cli.exe` never uses the network.
+
 ## Build on Linux (Ubuntu 24.04 / Debian 12)
 
 Everything comes from the distribution packages, no vcpkg:

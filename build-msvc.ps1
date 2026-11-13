@@ -75,8 +75,9 @@ if ($DepsOnly) {
 # --- Qt 6 (GUI presets only) ---------------------------------------------
 if ($Preset -like 'x64-gui*') {
     if (-not $env:QT6_ROOT) {
+        # <root>\6.x.y\msvc2022_64\bin\qmake.exe, newest version first
         $candidates = Get-ChildItem 'D:\OpenSCAD\Qt','C:\Qt' -Directory -ErrorAction SilentlyContinue |
-            Get-ChildItem -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^6\.' } |
+            Where-Object { $_.Name -match '^6\.' } |
             ForEach-Object { Join-Path $_.FullName 'msvc2022_64' } | Where-Object { Test-Path (Join-Path $_ 'bin\qmake.exe') } | Sort-Object -Descending
         if ($candidates) { $env:QT6_ROOT = ($candidates | Select-Object -First 1) }
     }

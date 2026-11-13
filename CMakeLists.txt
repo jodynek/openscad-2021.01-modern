@@ -701,6 +701,29 @@ endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
 
+#
+# Windows version resource (icon + ProductName/ProductVersion in the exe properties).
+# Code signing (SignPath) requires identical ProductName/ProductVersion in every signed binary.
+#
+if(MSVC)
+  set(OPENSCAD_PRODUCT_NAME "OpenSCAD 2021.01 Modern" CACHE STRING "ProductName attribute of the Windows binaries")
+  set(OPENSCAD_MODERN_RELEASE "1" CACHE STRING "Release number of the modern build (tag v2021.01-modern.N)")
+  set(RC_PRODUCTNAME "${OPENSCAD_PRODUCT_NAME}")
+  set(RC_FILEVERSION "${OPENSCAD_YEAR},${OPENSCAD_MONTH},${OPENSCAD_MODERN_RELEASE},0")
+  set(RC_FILEVERSION_STR "${OPENSCAD_YEAR}.${OPENSCAD_MONTH}.${OPENSCAD_MODERN_RELEASE}.0")
+  set(RC_PRODUCTVERSION_STR "${VERSION}-modern.${OPENSCAD_MODERN_RELEASE}")
+  set(RC_SOURCE_DIR "${CMAKE_SOURCE_DIR}")
+  if(HEADLESS)
+    set(RC_FILEDESCRIPTION "OpenSCAD command-line renderer")
+    set(RC_ORIGINALFILENAME "openscad.exe")
+  else()
+    set(RC_FILEDESCRIPTION "OpenSCAD - The Programmers Solid 3D CAD Modeller")
+    set(RC_ORIGINALFILENAME "OpenSCAD.exe")
+  endif()
+  configure_file("${CMAKE_SOURCE_DIR}/openscad_win32.rc.in" "${CMAKE_BINARY_DIR}/openscad_win32.rc" @ONLY)
+  target_sources(OpenSCAD PRIVATE "${CMAKE_BINARY_DIR}/openscad_win32.rc")
+endif()
+
 # Resource folders the program looks up next to the executable (PlatformUtils::lookupResourcesPath):
 # copy them into the build output so a build tree is self-contained (and looks like a release layout).
 set(OPENSCAD_RESOURCE_DIRS color-schemes examples fonts libraries templates)

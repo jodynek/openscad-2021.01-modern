@@ -17,6 +17,11 @@
 #define AppName "OpenSCAD"
 #define AppExe "OpenSCAD.exe"
 #define AppUrl "https://github.com/jodynek/openscad-2021.01-modern"
+#ifndef ModernRelease
+  #define ModernRelease "1"
+#endif
+; ProductName/ProductVersion must match the binaries (openscad_win32.rc.in) - required for code signing
+#define ProductName "OpenSCAD 2021.01 Modern"
 
 [Setup]
 AppId={{7B6C2F4E-3F0B-4C2E-9D7A-OPENSCAD2021M}
@@ -46,6 +51,13 @@ SolidCompression=yes
 ChangesAssociations=yes
 ChangesEnvironment=yes
 MinVersion=10.0
+VersionInfoVersion=2021.1.{#ModernRelease}.0
+VersionInfoProductName={#ProductName}
+VersionInfoProductVersion=2021.1.{#ModernRelease}.0
+VersionInfoProductTextVersion={#AppVersion}-modern.{#ModernRelease}
+VersionInfoDescription={#ProductName} Setup
+VersionInfoCompany=The OpenSCAD Developers (modern build: Petr Jodas)
+VersionInfoCopyright=Copyright (C) 2009-2021 The OpenSCAD Developers. GPL-2.0-or-later.
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

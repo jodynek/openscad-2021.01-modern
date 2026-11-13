@@ -142,6 +142,15 @@ po buildu odešle artefakt s instalátorem do SignPath a zveřejní podepsanou k
 Alternativy jsou Azure Trusted Signing nebo klasický OV/EV certifikát přes direktivu
 `SignTool` v Inno Setupu a `signtool.exe` na obou exe před zabalením.
 
+Co SignPath Foundation od projektu vyžaduje, je připraveno: sekce „Code signing policy"
+v `README.md` (role v týmu, prohlášení o soukromí, povinná věta), veřejný CI build a Windows
+version resource. `openscad_win32.rc.in` CMake konfiguruje do build adresáře (jen MSVC) a dává
+oběma exe ikonu, `ProductName` (`OPENSCAD_PRODUCT_NAME`, výchozí `OpenSCAD 2021.01 Modern`),
+`ProductVersion` (`<verze>-modern.<OPENSCAD_MODERN_RELEASE>`) a `FileVersion`
+(`2021.1.<N>.0`); instalátor nese stejné hodnoty v direktivách `VersionInfo*`
+(`/DModernRelease=N`). SignPath vyžaduje shodný název a verzi produktu ve všech podepsaných
+souborech. Připravené odpovědi do formuláře žádosti jsou v `installer/signpath-application.md`.
+
 ### 4.4 Nástroje mimo vcpkg
 
 `tools/winflexbison/` – flex 2.6.4 a bison 3.8.2 pro Windows (lexxmark/winflexbison 2.5.25).

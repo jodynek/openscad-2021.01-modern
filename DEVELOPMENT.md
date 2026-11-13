@@ -145,6 +145,16 @@ unsigned installer is published. Alternatives are Azure Trusted Signing or a cla
 certificate used through Inno Setup's `SignTool` directive and `signtool.exe` on the two
 executables before packaging.
 
+What SignPath Foundation requires from the project is in place: the "Code signing policy"
+section of `README.md` (team roles, privacy statement, the mandatory sentence), a public CI
+build, and a Windows version resource. `openscad_win32.rc.in` is configured by CMake into the
+build tree (MSVC only) and gives both executables the icon, `ProductName`
+(`OPENSCAD_PRODUCT_NAME`, default `OpenSCAD 2021.01 Modern`), `ProductVersion`
+(`<version>-modern.<OPENSCAD_MODERN_RELEASE>`) and `FileVersion` (`2021.1.<N>.0`); the
+installer carries the same values in its `VersionInfo*` directives (`/DModernRelease=N`).
+SignPath enforces identical product name/version in every signed file. The prepared answers
+for the application form are in `installer/signpath-application.md`.
+
 ### 4.4 Tools outside vcpkg
 
 `tools/winflexbison/` – flex 2.6.4 and bison 3.8.2 for Windows (lexxmark/winflexbison 2.5.25).
