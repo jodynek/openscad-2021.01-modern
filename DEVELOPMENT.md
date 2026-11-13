@@ -114,6 +114,18 @@ whole Linux build (`linux-headless`, then `linux-release`) plus the smoke script
 clean `ubuntu:24.04` container and copies binaries and logs to `build/linux-docker`; it is the
 reference for CI and the way the Linux build is verified from Windows.
 
+### 4.3c Windows installer
+
+`installer/openscad.iss` (Inno Setup 6) packages the `x64-gui` build output (executable, DLLs,
+Qt plugin folders, resource folders) plus the `x64-headless` executable as `openscad-cli.exe`
+(both builds share the same DLL set). It registers the `.scad` association (`HKA`, so it works
+for admin and per-user installs), optionally adds the folder to `PATH` (`[Code]` section), and
+bundles `vc_redist.x64.exe` from the Visual Studio installation, run only when the installed
+14.x runtime is missing or older than the build toolset (`VCRedistNeeded`).
+`installer/build-installer.ps1` locates ISCC and the redistributable and compiles the script;
+the output is `build/installer/OpenSCAD-<version>-modern-win64-setup.exe`. Silent install and
+uninstall are the standard Inno switches (`/VERYSILENT /NORESTART`, `/CURRENTUSER`).
+
 ### 4.4 Tools outside vcpkg
 
 `tools/winflexbison/` – flex 2.6.4 and bison 3.8.2 for Windows (lexxmark/winflexbison 2.5.25).

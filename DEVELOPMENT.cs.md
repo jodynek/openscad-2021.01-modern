@@ -112,6 +112,18 @@ spustí celý linuxový build (`linux-headless`, pak `linux-release`) plus smoke
 kontejneru `ubuntu:24.04` a zkopíruje binárky a logy do `build/linux-docker`; je to reference
 pro CI a způsob, jak se Linux build ověřuje z Windows.
 
+### 4.3c Instalátor pro Windows
+
+`installer/openscad.iss` (Inno Setup 6) balí výstup buildu `x64-gui` (exe, DLL, složky Qt
+pluginů, složky se zdroji) plus exe z `x64-headless` jako `openscad-cli.exe` (oba buildy sdílejí
+stejnou sadu DLL). Registruje asociaci `.scad` (`HKA`, funguje pro instalaci správcem i pro
+uživatele), volitelně přidá složku do `PATH` (sekce `[Code]`) a obsahuje `vc_redist.x64.exe`
+z instalace Visual Studia, který se spustí jen když nainstalovaný runtime 14.x chybí nebo je
+starší než toolset buildu (`VCRedistNeeded`). `installer/build-installer.ps1` najde ISCC
+a redistributable a skript přeloží; výstup je
+`build/installer/OpenSCAD-<verze>-modern-win64-setup.exe`. Tichá instalace a odinstalace jsou
+standardní přepínače Inno (`/VERYSILENT /NORESTART`, `/CURRENTUSER`).
+
 ### 4.4 Nástroje mimo vcpkg
 
 `tools/winflexbison/` – flex 2.6.4 a bison 3.8.2 pro Windows (lexxmark/winflexbison 2.5.25).

@@ -84,6 +84,21 @@ environment variables `VCPKG_ROOT` (for example `D:\OpenSCAD\vcpkg`) and, for th
 `QT6_ROOT` (for example `D:\OpenSCAD\Qt\6.10.3\msvc2022_64`) before starting Visual Studio, or
 add them to a `CMakeUserPresets.json`.
 
+### Windows installer
+
+Ready-made installers are on the [Releases page](https://github.com/jodynek/openscad-2021.01-modern/releases). To build one yourself
+(needs [Inno Setup 6](https://jrsoftware.org/isinfo.php) and both Windows builds):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\installer\build-installer.ps1
+```
+
+Result: `build\installer\OpenSCAD-2021.01-modern-win64-setup.exe` (about 48 MB). It installs the
+GUI, `openscad-cli.exe` (the command-line build), the examples, fonts and colour schemes, offers
+the `.scad` file association and an optional PATH entry, and bundles the Visual C++ runtime
+(installed only when missing). Silent install: `setup.exe /VERYSILENT /NORESTART`
+(`/CURRENTUSER` installs per user without administrator rights).
+
 ## Build on Linux (Ubuntu 24.04 / Debian 12)
 
 Everything comes from the distribution packages, no vcpkg:

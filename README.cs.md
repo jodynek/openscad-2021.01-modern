@@ -82,6 +82,21 @@ Smoke testy umí spustit i GUI: `tests\smoke\run-smoke.ps1 -Gui`.
 VS nastavte proměnné prostředí `VCPKG_ROOT` (např. `D:\OpenSCAD\vcpkg`) a pro GUI `QT6_ROOT`
 (např. `D:\OpenSCAD\Qt\6.10.3\msvc2022_64`), nebo je vložte do `CMakeUserPresets.json`.
 
+### Instalátor pro Windows
+
+Hotové instalátory jsou na [stránce Releases](https://github.com/jodynek/openscad-2021.01-modern/releases).
+Vlastní sestavení (potřebuje [Inno Setup 6](https://jrsoftware.org/isinfo.php) a oba Windows buildy):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\installer\build-installer.ps1
+```
+
+Výsledek: `build\installer\OpenSCAD-2021.01-modern-win64-setup.exe` (asi 48 MB). Nainstaluje GUI,
+`openscad-cli.exe` (příkazovou verzi), příklady, fonty a barevná schémata, nabídne asociaci
+souborů `.scad` a volitelně přidání do PATH, a obsahuje Visual C++ runtime (instaluje se jen
+když chybí). Tichá instalace: `setup.exe /VERYSILENT /NORESTART` (`/CURRENTUSER` instaluje
+pro uživatele bez práv správce).
+
 ## Kompilace na Linuxu (Ubuntu 24.04 / Debian 12)
 
 Vše z distribučních balíčků, bez vcpkg:
