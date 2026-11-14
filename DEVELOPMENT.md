@@ -123,7 +123,7 @@ for admin and per-user installs), optionally adds the folder to `PATH` (`[Code]`
 bundles `vc_redist.x64.exe` from the Visual Studio installation, run only when the installed
 14.x runtime is missing or older than the build toolset (`VCRedistNeeded`).
 `installer/build-installer.ps1` locates ISCC and the redistributable and compiles the script;
-the output is `build/installer/OpenSCAD-<version>-modern-win64-setup.exe`. Silent install and
+the output is `build/installer/OpenSCAD-<version>-modern.<N>-win64-setup.exe` (N = `ModernRelease` in the .iss, the same number as `OPENSCAD_MODERN_RELEASE` in CMake). Silent install and
 uninstall are the standard Inno switches (`/VERYSILENT /NORESTART`, `/CURRENTUSER`).
 
 ### 4.3d Continuous integration and code signing
@@ -154,6 +154,20 @@ build tree (MSVC only) and gives both executables the icon, `ProductName`
 installer carries the same values in its `VersionInfo*` directives (`/DModernRelease=N`).
 SignPath enforces identical product name/version in every signed file. The prepared answers
 for the application form are in `installer/signpath-application.md`.
+
+### 4.3e Program page on jodynek.cz
+
+The page about the program on <https://jodynek.cz/programs/openscad/> is versioned here in
+`www/openscad/` (`index.html` Czech, `en.html` English, `historie.html` / `history.html` with
+the full changelog, `changelog.json`, `img/`), the same layout as the jCmd and jNotepad pages.
+Nothing is edited on the web share directly. `publish-www.ps1` (after `build-installer.ps1`)
+turns the `next` entry of `changelog.json` into the released version, uploads the installer
+with its SHA-256 to `programs/openscad/releases/`, copies the pages with `?v=<version>` cache
+busting on images and PDFs, updates `programs/manifest.json`, the fallback list in the site's
+`index.html` and `HISTORIE-WEBU.md`, commits the web in its own git (`E:\Web\git-web.cmd`,
+pushed to GitLab; `tools/sync-web-history.ps1` first reconciles it) and checks the result over
+HTTPS. Before each release add the changes to the `next` entry of `changelog.json` (Czech and
+English) and raise `ModernRelease` / `OPENSCAD_MODERN_RELEASE`.
 
 ### 4.4 Tools outside vcpkg
 

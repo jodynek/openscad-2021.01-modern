@@ -47,7 +47,7 @@ authentication on the GitHub account (and later on the SignPath account).
 * `OpenSCAD.exe` (GUI) and `openscad-cli.exe` (command line), ProductName
   `OpenSCAD 2021.01 Modern`, ProductVersion `2021.01-modern.N`, built by
   `.github/workflows/windows.yml`.
-* `OpenSCAD-2021.01-modern-win64-setup.exe` (Inno Setup installer with the same
+* `OpenSCAD-2021.01-modern.N-win64-setup.exe` (Inno Setup installer with the same
   VersionInfo product name/version).
 * Third-party DLLs shipped next to the executables (Qt, CGAL/GMP/MPFR, Boost, …) are unsigned
   upstream binaries included in the package, as permitted by the SignPath terms.

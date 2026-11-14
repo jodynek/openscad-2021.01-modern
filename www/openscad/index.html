@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenSCAD 2021.01 – modernizovaný build pro Windows 11</title>
+<meta name="description" content="OpenSCAD 2021.01 přeložený moderními nástroji: Visual Studio 2026, CMake + vcpkg, C++17, Qt 6 s tmavým režimem a instalátor pro Windows 11 x64. Skriptový 3D CAD zdarma ke stažení, zdrojové kódy na GitHubu.">
+<meta property="og:title" content="OpenSCAD 2021.01 – modernizovaný build">
+<meta property="og:description" content="Skriptový 3D CAD OpenSCAD 2021.01 s Qt 6, tmavým režimem a instalátorem pro Windows 11. Zdrojové kódy přeložitelné jedním příkazem na Windows i Linuxu.">
+<link rel="icon" type="image/png" href="img/icon.png">
+<link rel="alternate" hreflang="en" href="en.html">
+<style>
+  :root { --bg:#f6f7fb; --card:#fff; --text:#1d2433; --muted:#5d667a; --accent:#2563eb; --accent-text:#fff; --line:#e2e6ef; --code:#eef1f8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12151c; --card:#1b2030; --text:#e6e9f2; --muted:#98a1b8; --accent:#6ea0ff; --accent-text:#0d1220; --line:#2a3145; --code:#0e111a; }
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui,'Segoe UI',sans-serif; }
+  a { color:var(--accent); }
+  .wrap { max-width:960px; margin:0 auto; padding:0 20px; }
+  .shot { display:block; width:100%; height:auto; border-radius:12px; border:1px solid var(--line); background:#000; }
+  header { padding:56px 0 36px; text-align:center; }
+  header img { width:80px; height:80px; margin:0 auto 14px; }
+  h1 { margin:0 0 8px; font-size:36px; }
+  .lead { color:var(--muted); max-width:640px; margin:0 auto 24px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; background:var(--accent); color:var(--accent-text);
+         text-decoration:none; font-weight:700; padding:13px 26px; border-radius:10px; border:2px solid transparent; transition:transform .15s; }
+  .btn:hover { transform:translateY(-2px); }
+  .btn svg { width:20px; height:20px; fill:currentColor; }
+  .btn-ghost { background:transparent; color:var(--text); border-color:var(--line); }
+  .hero-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .version-note { color:var(--muted); font-size:14px; margin-top:12px; }
+  section { margin:44px 0; }
+  h2 { font-size:24px; margin:0 0 8px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .card h3 { margin:0 0 6px; font-size:16px; }
+  .card p { margin:0; color:var(--muted); font-size:15px; }
+  code { background:var(--code); padding:1px 6px; border-radius:6px; font-size:14px; }
+  pre { background:var(--code); border:1px solid var(--line); border-radius:12px; padding:14px 16px; overflow:auto; font-size:14px; line-height:1.5; }
+  pre code { background:none; padding:0; }
+
+  /* vsechny funkce: sbalene kategorie (jako u jCmd) */
+  .allfeat-head { display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin:28px 0 12px; }
+  .allfeat-head h3 { margin:0; font-size:19px; flex:1 0 auto; }
+  .btn-small { font:inherit; font-size:14px; padding:8px 14px; border-radius:10px; border:1px solid var(--line);
+               background:var(--card); color:var(--text); cursor:pointer; }
+  .btn-small:hover { border-color:var(--accent); }
+  .allfeat { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:10px; align-items:start; }
+  .allfeat details { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:0 16px; }
+  .allfeat details[open] { padding-bottom:10px; }
+  .allfeat summary { cursor:pointer; padding:12px 0; font-weight:700; list-style:none; display:flex; justify-content:space-between; gap:10px; }
+  .allfeat summary::-webkit-details-marker { display:none; }
+  .allfeat summary::after { content:'+'; color:var(--muted); font-weight:400; }
+  .allfeat details[open] summary::after { content:'−'; }
+  .allfeat summary .count { color:var(--muted); font-weight:400; font-size:14px; margin-left:auto; }
+  .allfeat ul { margin:0; padding-left:18px; color:var(--muted); font-size:15px; }
+  .allfeat li { margin:3px 0; }
+
+  /* stahovani (stejne jako u jCmd) */
+  .downloads { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(290px,100%),1fr)); gap:20px; max-width:1000px; }
+  .dl { background:var(--card); border:2px solid var(--line); border-radius:16px; padding:26px; display:flex; flex-direction:column; }
+  .dl:hover { border-color:var(--accent); }
+  .dl .os { display:flex; align-items:center; gap:12px; }
+  .dl .os svg { width:38px; height:38px; fill:var(--text); flex:none; }
+  .dl h3 { margin:0; font-size:22px; }
+  .dl .kind { color:var(--muted); font-size:14px; }
+  .dl ul { margin:18px 0; padding-left:20px; color:var(--muted); font-size:15px; flex:1; }
+  .dl .btn { justify-content:center; }
+  .dl .meta { margin-top:12px; font-size:13px; color:var(--muted); word-break:break-all; }
+  .dl .meta summary { cursor:pointer; }
+  .dl.off .btn { pointer-events:none; opacity:.45; }
+
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; font-size:15px; }
+  td, th { padding:9px 14px; text-align:left; border-bottom:1px solid var(--line); }
+  tr:last-child td { border-bottom:0; }
+  td:first-child { font-family:ui-monospace,Consolas,monospace; white-space:nowrap; width:1%; }
+  footer { color:var(--muted); font-size:14px; text-align:center; padding:20px 0 48px; }
+
+  /* historie zmen */
+  .changes { display:flex; flex-direction:column; gap:14px; }
+  .release { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; }
+  .release h3 { margin:0; font-size:17px; display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px; }
+  .release .tag { background:var(--accent); color:var(--accent-text); font-size:12px; font-weight:700; padding:1px 8px; border-radius:20px; }
+  .release ul { margin:10px 0 0; padding-left:20px; }
+  .release li { margin:3px 0; }
+  .muted { color:var(--muted); }
+  .backlink { font-size:14px; padding:10px 0; text-align:left; }
+  .backlink a { color:inherit; opacity:.85; text-decoration:none; }
+  .backlink a:hover { text-decoration:underline; opacity:1; }
+  @media (max-width:520px) {
+    header { padding-top:32px; }
+    h1 { font-size:30px; }
+    td, th { padding:8px 10px; }
+    td:first-child { white-space:normal; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap backlink"><a href="/">← Zpět na jodynek.cz</a> · <a href="en.html" hreflang="en">English</a></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M11 4h2v9l3.5-3.5 1.4 1.4L12 16.8 6.1 10.9l1.4-1.4L11 13zM5 19h14v2H5z"/></symbol>
+  <symbol id="i-windows" viewBox="0 0 24 24"><path d="M3 5.5 10.5 4.5v7H3zM12 4.2 21 3v8.5h-9zM3 12.5h7.5v7L3 18.5zM12 12.5h9V21l-9-1.2z"/></symbol>
+  <symbol id="i-linux" viewBox="0 0 24 24"><path d="M12 3c-2 0-3 1.7-3 4 0 1.3-1 2.1-2 3.6C5.7 12.4 5 14 5 16c0 1 .7 1.5 1.5 1.2C7.2 18.7 9.2 20 12 20s4.8-1.3 5.5-2.8C18.3 17.5 19 17 19 16c0-2-.7-3.6-2-5.4-1-1.5-2-2.3-2-3.6 0-2.3-1-4-3-4z"/><circle cx="10.5" cy="8.5" r="1"/><circle cx="13.5" cy="8.5" r="1"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8.7 6.3 3 12l5.7 5.7 1.4-1.4L5.8 12l4.3-4.3zm6.6 0-1.4 1.4 4.3 4.3-4.3 4.3 1.4 1.4L21 12z"/></symbol>
+</svg>
+
+<div class="wrap">
+  <header>
+    <img src="img/icon.png" alt="">
+    <h1>OpenSCAD 2021.01 <span class="muted" style="font-weight:400">· modernizovaný build</span></h1>
+    <p class="lead">Skriptový 3D CAD: díl popíšete v jazyce OpenSCAD a program ho spočítá a vyexportuje do STL nebo 3MF. Poslední tagovaná verze 2021.01 přeložená moderními nástroji – Visual Studio 2026, CMake + vcpkg, C++17 a Qt 6 s tmavým režimem – s instalátorem pro Windows 11.</p>
+    <div class="hero-btns">
+      <a class="btn" href="#stahnout"><svg><use href="#i-down"/></svg>Stáhnout zdarma</a>
+      <a class="btn btn-ghost" href="#funkce">Funkce</a>
+      <a class="btn btn-ghost" href="#zmeny">Co je nového</a>
+      <a class="btn btn-ghost" href="https://github.com/jodynek/openscad-2021.01-modern" rel="noopener">Zdrojové kódy na GitHubu</a>
+      <a class="btn btn-ghost" href="https://github.com/jodynek/openscad-2021.01-modern/blob/main/README.cs.md" rel="noopener">Návod ke kompilaci</a>
+    </div>
+    <div class="version-note" id="version-note"></div>
+  </header>
+
+  <section id="ukazka">
+    <h2>Jak to vypadá</h2>
+    <p class="muted" style="margin-top:0">Editor, náhled a konzole v tmavém režimu (styl Fusion sleduje nastavení Windows). Vlevo kód příkladu <code>logo.scad</code>, vpravo výsledek.</p>
+    <img class="shot" src="img/screenshot.png" alt="OpenSCAD 2021.01 – editor s kódem a 3D náhled loga v tmavém režimu" loading="lazy">
+  </section>
+
+  <section id="funkce">
+    <h2>Funkce</h2>
+    <div class="grid">
+      <div class="card"><h3>Modelování kódem</h3><p>Díl popíšete krátkým skriptem: krychle, koule, válce, vytažení 2D profilů, sjednocení, rozdíl a průnik. Změníte číslo, změní se díl – ideální pro parametrické součástky do 3D tisku.</p></div>
+      <div class="card"><h3>Stejné výsledky jako oficiální 2021.01</h3><p>Jazyk ani geometrické jádro CGAL se nezměnily. Vaše stávající soubory a knihovny se vyhodnotí stejně, jen v programu přeloženém pro dnešní Windows.</p></div>
+      <div class="card"><h3>Qt 6 a tmavý režim</h3><p>Rozhraní na Qt 6.10 se stylem Fusion, které sleduje světlý nebo tmavý motiv Windows; barevná schémata editoru i náhledu se přepnou s ním.</p></div>
+      <div class="card"><h3>Export pro tiskárnu a frézu</h3><p>STL, 3MF, AMF, OFF, DXF, SVG, PDF a PNG. Odeslání do OctoPrintu nebo tiskové služby přímo z programu.</p></div>
+      <div class="card"><h3>Customizer</h3><p>Proměnné ze skriptu se zobrazí jako formulář s posuvníky a výběry; sady hodnot jde uložit a sdílet s modelem.</p></div>
+      <div class="card"><h3>Příkazová řádka</h3><p><code>openscad-cli.exe</code> renderuje a exportuje bez okna – pro dávky, skripty a CI. Text funguje díky přibaleným fontům Liberation a fontům z Windows.</p></div>
+      <div class="card"><h3>Instalátor pro Windows 11</h3><p>Nainstaluje GUI, příkazovou verzi, příklady, fonty a knihovny, nabídne asociaci souborů <code>.scad</code> a přidání do PATH; Visual C++ runtime přibalí a nainstaluje jen když chybí.</p></div>
+      <div class="card"><h3>Jednoduchá kompilace</h3><p>Jeden PowerShell skript stáhne vcpkg, přeloží všechny knihovny a sestaví program ve Visual Studiu 2022 nebo 2026. Na Ubuntu 24.04 stačí distribuční balíčky a dva příkazy CMake.</p></div>
+      <div class="card"><h3>Open source</h3><p>GPL 2 nebo novější, zdrojové kódy a historie změn oproti čistému release 2021.01 jsou na GitHubu; Windows i Linux se překládají automaticky na GitHub Actions.</p></div>
+    </div>
+
+    <div class="allfeat-head">
+      <h3>Všechny funkce</h3>
+      <button type="button" class="btn-small" id="feat-toggle">Rozbalit vše</button>
+    </div>
+    <div class="allfeat" id="allfeat">
+      <details><summary>Jazyk a modelování</summary><ul>
+        <li>Tělesa: cube, sphere, cylinder, polyhedron; 2D: circle, square, polygon, text; import STL, OFF, AMF, 3MF, DXF a SVG</li>
+        <li>Booleovské operace union, difference, intersection; hull, minkowski, offset, projection</li>
+        <li>Transformace translate, rotate, scale, mirror, multmatrix, color, resize</li>
+        <li>linear_extrude a rotate_extrude z 2D profilů, i se zkroucením a změnou měřítka</li>
+        <li>Moduly, funkce, rekurze, list comprehension, let, each, assert, echo</li>
+        <li>Přesnost oblých tvarů přes $fn, $fa a $fs; náhled vs. plný render (F5 / F6)</li>
+        <li>include a use pro knihovny, OPENSCADPATH a přibalená knihovna MCAD</li>
+        <li>text() s libovolným fontem systému a fonty Liberation přibalenými k programu</li>
+      </ul></details>
+      <details><summary>Editor a GUI</summary><ul>
+        <li>Editor QScintilla 2.14 se zvýrazňováním, skládáním bloků, automatickým odsazením, záložkami a hledáním s nahrazením</li>
+        <li>Více otevřených souborů v záložkách, automatické znovunačtení při změně na disku (F4)</li>
+        <li>3D náhled s OpenCSG, ortografická i perspektivní kamera, osy, hrany, měřítko, pohledy z klávesnice (Ctrl+4 až Ctrl+0)</li>
+        <li>Konzole s výpisem echo a chyb, Error-Log s filtrem, strom objektů a zvýraznění vybraných částí (#, %, !, *)</li>
+        <li>Customizer: parametry se slovníkem a rozsahy jako posuvníky, přepínače a výběry, uložené sady parametrů v JSON</li>
+        <li>Barevná schémata editoru i 3D okna, výchozí podle světlého nebo tmavého motivu Windows</li>
+        <li>Uvítací obrazovka s naposledy otevřenými soubory a příklady</li>
+        <li>Nastavení: písmo, chování editoru, vlastnosti náhledu, OctoPrint, zálohy</li>
+      </ul></details>
+      <details><summary>Export, import a tisk</summary><ul>
+        <li>Export STL (ASCII i binární), 3MF, AMF, OFF, DXF, SVG, PDF, PNG; export obrázku náhledu s volitelnou velikostí a kamerou</li>
+        <li>Odeslání modelu do OctoPrintu (nahrání a volitelně spuštění tisku) nebo do služby 3D tisku; vše jen na vaši žádost</li>
+        <li>Kontrola validity tělesa pro tisk (Design › Check Validity)</li>
+        <li>Příkazová verze: <code>openscad-cli.exe -o dil.stl dil.scad</code>, parametry přes -D, <code>--export-format</code>, <code>-p</code> pro sady z Customizeru, PNG s <code>--imgsize</code> a <code>--camera</code></li>
+      </ul></details>
+      <details><summary>Co je v modernizovaném buildu jinak</summary><ul>
+        <li>Visual Studio 2022 / 2026 (MSVC), CMake 4 s presety, závislosti z manifestu vcpkg – žádné ruční shánění knihoven</li>
+        <li>C++17: GLib nahrazena vlastními UTF-8 funkcemi, části Boostu nahrazeny std::filesystem, std::optional, std::variant a std::regex; Boost jen hlavičkový + Program.Options</li>
+        <li>Qt 6.10 (Qt 5 odstraněno), QScintilla 2.14, OpenGL přes QOpenGLWidget; styl Fusion s podporou tmavého režimu</li>
+        <li>Aktuální knihovny: CGAL 5.6, Boost 1.92, Eigen 5, GLEW 2.3, libxml2, libzip, harfbuzz, fontconfig</li>
+        <li>Opravy pádů: tichý pád při prázdné cestě ke zdrojům nahrazen hlášením, nesprávná práce s ukazatelem v search() opravena</li>
+        <li>Instalátor Inno Setup, smoke testy, GitHub Actions pro Windows i Linux, připravené podepisování kódu (SignPath Foundation)</li>
+        <li>Linux: Ubuntu 24.04 z distribučních balíčků (Qt 6.4, CGAL 5.6), kontrola čistého buildu v Dockeru</li>
+      </ul></details>
+    </div>
+  </section>
+
+  <section id="stahnout">
+    <h2>Stáhnout</h2>
+    <p class="lead" id="dl-lead" style="margin-left:0">Zdarma, bez reklam a&nbsp;bez registrace.</p>
+    <div class="downloads">
+      <div class="dl" id="dl-win">
+        <div class="os"><svg><use href="#i-windows"/></svg><div><h3>Windows</h3><span class="kind">Instalátor, Windows 10 a 11 (64bit)</span></div></div>
+        <ul><li>Spusťte instalátor; instaluje do Program Files, nebo jen pro vás bez práv správce (volba v průvodci nebo <code>/CURRENTUSER</code>).</li>
+          <li>Obsahuje GUI <code>OpenSCAD.exe</code>, příkazovou verzi <code>openscad-cli.exe</code>, příklady, fonty a knihovny.</li>
+          <li>Instalátor zatím není digitálně podepsaný; SmartScreen může při prvním spuštění vyžádat potvrzení. Kontrolní součet SHA-256 je níže.</li></ul>
+        <a class="btn" href="https://jodynek.cz/#programy"><svg><use href="#i-down"/></svg><span>Stáhnout pro Windows</span></a>
+        <div class="meta"></div>
+      </div>
+      <div class="dl" id="dl-src">
+        <div class="os"><svg><use href="#i-linux"/></svg><div><h3>Linux a zdrojové kódy</h3><span class="kind">Ubuntu 24.04 / Debian 12, kompilace ze zdrojů</span></div></div>
+        <ul><li><code>sudo ./tools/linux-deps.sh</code> nainstaluje kompilátor, CMake, CGAL, Qt 6 a QScintillu z balíčků distribuce.</li>
+          <li><code>cmake --preset linux-release</code> a <code>cmake --build --preset linux-release</code> přeloží GUI i příkazovou verzi.</li>
+          <li>Na Windows ve Visual Studiu 2022/2026 stačí <code>build-msvc.ps1</code>; první běh přeloží knihovny (asi hodina), další trvají sekundy.</li></ul>
+        <a class="btn btn-ghost" href="https://github.com/jodynek/openscad-2021.01-modern" rel="noopener"><svg><use href="#i-code"/></svg><span>Repozitář na GitHubu</span></a>
+        <div class="meta">Releasy včetně instalátoru jsou i na <a href="https://github.com/jodynek/openscad-2021.01-modern/releases" rel="noopener">GitHub Releases</a>.</div>
+      </div>
+    </div>
+    <p class="muted">Tichá instalace: <code>OpenSCAD-2021.01-modern.1-win64-setup.exe /VERYSILENT /NORESTART</code>. Odinstalace přes Nastavení Windows › Aplikace.</p>
+  </section>
+
+  <section id="zmeny">
+    <h2>Historie změn</h2>
+    <p class="muted" style="margin-top:0">Poslední tři verze; starší jsou na stránce <a href="historie.html">Historie změn</a>.</p>
+    <div class="changes" id="changelog" data-limit="3" data-more="historie.html"><p class="muted">Načítám…</p></div>
+  </section>
+
+  <section id="zkratky">
+    <h2>Klávesové zkratky</h2>
+    <table>
+      <tr><td>F4</td><td>Znovu načíst soubor a náhled</td></tr>
+      <tr><td>F5</td><td>Náhled (OpenCSG, rychlý)</td></tr>
+      <tr><td>F6</td><td>Render (CGAL, přesná geometrie pro export)</td></tr>
+      <tr><td>F7</td><td>Export do STL</td></tr>
+      <tr><td>F8</td><td>3D tisk (OctoPrint nebo tisková služba)</td></tr>
+      <tr><td>F9 / F10 / F11 / F12</td><td>Zobrazení: náhled / plochy / drátový model / Thrown Together</td></tr>
+      <tr><td>Ctrl+1 / Ctrl+2 / Ctrl+3</td><td>Hrany / osy / nitkový kříž</td></tr>
+      <tr><td>Ctrl+4 až Ctrl+9</td><td>Pohled shora, zdola, zleva, zprava, zepředu, zezadu</td></tr>
+      <tr><td>Ctrl+0</td><td>Diagonální pohled</td></tr>
+      <tr><td>Ctrl+N / Ctrl+O / Ctrl+S</td><td>Nový / otevřít / uložit soubor</td></tr>
+      <tr><td>Ctrl+R</td><td>Znovu načíst soubor</td></tr>
+      <tr><td>Ctrl+W</td><td>Zavřít záložku</td></tr>
+      <tr><td>Ctrl+F / Ctrl+G</td><td>Hledat / najít další</td></tr>
+      <tr><td>Ctrl+I / Ctrl+D</td><td>Odsadit / zakomentovat výběr</td></tr>
+      <tr><td>Ctrl+F2 / F2</td><td>Záložka v editoru / skok na další záložku</td></tr>
+      <tr><td>Ctrl+T</td><td>Zkopírovat posun kamery (viewport translation)</td></tr>
+    </table>
+  </section>
+
+  <footer>
+    © 2026 Petr Jodas (modernizovaný build) · OpenSCAD © The OpenSCAD Developers, GPL-2.0-or-later · <a href="/#programy">← Programy na jodynek.cz</a>
+  </footer>
+</div>
+
+<script>
+  // odkaz na aktualni verzi z programs/manifest.json na webu (stejne jako stranka jCmd)
+  const mb = n => (n / 1048576).toFixed(1).replace('.', ',') + ' MB';
+  const verOf = s => (String(s || '').match(/\d{4}\.\d{2}(?:-modern\.\d+)?/) || [''])[0];
+  async function fileInfo(url) {
+    const info = {};
+    try {
+      const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+      if (!r.ok) return null;
+      info.size = Number(r.headers.get('content-length')) || 0;
+    } catch { return null; }
+    try {
+      const s = await fetch(url + '.sha256', { cache: 'no-store' });
+      if (s.ok) info.sha = (await s.text()).trim().split(/\s+/)[0];
+    } catch { /* volitelne */ }
+    return info;
+  }
+  async function fill(id, path, version) {
+    const box = document.getElementById(id);
+    if (!path) { box.classList.add('off'); box.querySelector('.meta').textContent = 'Zatím není k dispozici.'; return; }
+    const url = '/' + String(path).replace(/^\//, '');
+    const btn = box.querySelector('.btn');
+    btn.href = '/dl.php?f=' + encodeURIComponent(url.slice(1));   // pres pocitadlo stazeni (dl.php)
+    btn.setAttribute('download', '');
+    const name = url.split('/').pop();
+    const info = await fileInfo(url);
+    const meta = box.querySelector('.meta');
+    if (!info) { meta.textContent = name; return; }
+    meta.innerHTML = '';
+    meta.append(`${name} · verze ${verOf(name) || version} · ${mb(info.size)}`);
+    if (info.sha) {
+      const d = document.createElement('details');
+      const s = document.createElement('summary');
+      s.textContent = 'Kontrolní součet SHA-256';
+      d.append(s, document.createTextNode(info.sha));
+      meta.append(d);
+    }
+  }
+  (async () => {
+    try {
+      const r = await fetch('/programs/manifest.json', { cache: 'no-store' });
+      if (!r.ok) throw new Error();
+      const items = await r.json();
+      const item = items.find(i => /programs\/openscad\//.test(i.href || ''));
+      if (!item) throw new Error();
+      const version = verOf(item.href) || verOf(item.name);
+      document.getElementById('version-note').textContent = version ? `Aktuální verze ${version}` : '';
+      if (version) document.getElementById('dl-lead').textContent = `Verze ${version}. Zdarma, bez reklam a bez registrace.`;
+      fill('dl-win', item.href, version);
+    } catch {
+      document.getElementById('dl-win').querySelector('.meta').textContent = 'Seznam verzí se nepodařilo načíst – stáhněte na https://jodynek.cz/#programy.';
+    }
+  })();
+
+  // historie zmen z changelog.json (polozka "next" = pripravovana verze, na webu se neukazuje)
+  (async () => {
+    const box = document.getElementById('changelog');
+    const parts = v => String(v).split(/[.-]/).map(n => parseInt(n, 10) || 0);
+    const newer = (a, b) => {
+      const x = parts(a.version), y = parts(b.version);
+      for (let i = 0; i < Math.max(x.length, y.length); i++) {
+        const d = (y[i] || 0) - (x[i] || 0);
+        if (d) return d;
+      }
+      return 0;
+    };
+    try {
+      const r = await fetch('changelog.json', { cache: 'no-store' });
+      if (!r.ok) throw new Error();
+      const releases = (await r.json()).filter(e => e.version && e.version !== 'next').sort(newer);
+      if (!releases.length) throw new Error();
+      box.innerHTML = '';
+      const limit = parseInt(box.dataset.limit || '0', 10);
+      releases.slice(0, limit > 0 ? limit : releases.length).forEach((rel, i) => {
+        const art = document.createElement('article');
+        art.className = 'release';
+        const h = document.createElement('h3');
+        h.append(`Verze ${rel.version}`);
+        if (rel.date) { const d = document.createElement('span'); d.className = 'muted'; d.style.fontWeight = '400'; d.style.fontSize = '14px'; d.textContent = rel.date; h.append(d); }
+        if (i === 0) {
+          const t = document.createElement('span');
+          t.className = 'tag';
+          t.textContent = 'aktuální';
+          h.append(t);
+        }
+        const ul = document.createElement('ul');
+        (rel.changes || []).forEach(c => {
+          const li = document.createElement('li');
+          li.textContent = c;
+          ul.append(li);
+        });
+        art.append(h, ul);
+        box.append(art);
+      });
+      if (limit > 0 && releases.length > limit && box.dataset.more) {
+        const p = document.createElement('p');
+        const a = document.createElement('a');
+        a.href = box.dataset.more;
+        a.textContent = 'Starší verze ({n}) – celá historie změn →'.replace('{n}', releases.length - limit);
+        p.append(a);
+        box.append(p);
+      }
+    } catch {
+      box.innerHTML = '<p class="muted">Historii změn se nepodařilo načíst.</p>';
+    }
+  })();
+
+  // Všechny funkce: počet v kategoriích a Rozbalit / Sbalit vše
+  (() => {
+    const groups = [...document.querySelectorAll('#allfeat details')];
+    const toggle = document.getElementById('feat-toggle');
+    groups.forEach(d => {
+      const c = document.createElement('span');
+      c.className = 'count';
+      c.textContent = d.querySelectorAll('li').length;
+      d.querySelector('summary').append(c);
+    });
+    toggle.addEventListener('click', () => {
+      const open = !groups.every(d => d.open);
+      groups.forEach(d => { d.open = open; });
+      toggle.textContent = open ? 'Sbalit vše' : 'Rozbalit vše';
+    });
+  })();
+</script>
+<div class="wrap backlink"><a href="/">← Zpět na jodynek.cz</a> · <a href="en.html" hreflang="en">English</a></div>
+</body>
+</html>

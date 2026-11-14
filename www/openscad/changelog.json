@@ -1,0 +1,23 @@
+[
+  { "version": "next", "date": "", "changes": [], "changes_en": [] },
+  { "version": "2021.01-modern.1", "date": "2026-11-13",
+    "changes": [
+      "První vydání modernizovaného buildu OpenSCAD 2021.01: Visual Studio 2026 (MSVC), CMake 4 s presety a závislosti z manifestu vcpkg.",
+      "C++17: GLib nahrazena vlastními UTF-8 funkcemi, části Boostu nahrazeny std::filesystem, std::optional, std::variant a std::regex; Boost jen hlavičkový plus Program.Options.",
+      "GUI na Qt 6.10 s QScintillou 2.14 a stylem Fusion, který sleduje světlý nebo tmavý motiv Windows; barevná schémata editoru a náhledu se přepínají s ním; Qt 5 odstraněno.",
+      "Aktuální knihovny: CGAL 5.6, Boost 1.92, Eigen 5, GLEW 2.3; opraven tichý pád při prázdné cestě ke zdrojům a chyba ukazatele ve funkci search().",
+      "Instalátor Inno Setup pro Windows 11 x64: GUI, openscad-cli.exe, příklady, fonty, knihovny, asociace .scad, volitelně PATH, Visual C++ runtime jen když chybí.",
+      "Linux: Ubuntu 24.04 z distribučních balíčků (presety linux-headless a linux-release), kontrola v čistém Dockeru; smoke testy a GitHub Actions pro Windows i Linux.",
+      "O programu: informace o buildu (kompilátor, Qt, CGAL, datum); binárky a instalátor nesou ProductName a verzi, připraveno podepisování kódu přes SignPath Foundation."
+    ],
+    "changes_en": [
+      "First release of the modernized OpenSCAD 2021.01 build: Visual Studio 2026 (MSVC), CMake 4 with presets and dependencies from a vcpkg manifest.",
+      "C++17: GLib replaced by own UTF-8 helpers, parts of Boost replaced by std::filesystem, std::optional, std::variant and std::regex; Boost is header-only plus Program.Options.",
+      "GUI on Qt 6.10 with QScintilla 2.14 and the Fusion style that follows the light or dark Windows theme; editor and preview colour schemes switch with it; Qt 5 removed.",
+      "Current libraries: CGAL 5.6, Boost 1.92, Eigen 5, GLEW 2.3; fixed a silent crash on an empty resource path and a dangling pointer in search().",
+      "Inno Setup installer for Windows 11 x64: GUI, openscad-cli.exe, examples, fonts, libraries, .scad association, optional PATH, Visual C++ runtime only when missing.",
+      "Linux: Ubuntu 24.04 from distribution packages (presets linux-headless and linux-release), verified in a clean Docker container; smoke tests and GitHub Actions for Windows and Linux.",
+      "About dialog: build information (compiler, Qt, CGAL, date); binaries and installer carry ProductName and version, code signing via SignPath Foundation prepared."
+    ]
+  }
+]

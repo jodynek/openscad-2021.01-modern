@@ -94,7 +94,7 @@ Vlastní sestavení (potřebuje [Inno Setup 6](https://jrsoftware.org/isinfo.php
 powershell -ExecutionPolicy Bypass -File .\installer\build-installer.ps1
 ```
 
-Výsledek: `build\installer\OpenSCAD-2021.01-modern-win64-setup.exe` (asi 48 MB). Nainstaluje GUI,
+Výsledek: `build\installer\OpenSCAD-2021.01-modern.1-win64-setup.exe` (asi 48 MB). Nainstaluje GUI,
 `openscad-cli.exe` (příkazovou verzi), příklady, fonty a barevná schémata, nabídne asociaci
 souborů `.scad` a volitelně přidání do PATH, a obsahuje Visual C++ runtime (instaluje se jen
 když chybí). Tichá instalace: `setup.exe /VERYSILENT /NORESTART` (`/CURRENTUSER` instaluje

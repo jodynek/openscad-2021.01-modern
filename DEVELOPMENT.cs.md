@@ -121,7 +121,7 @@ uživatele), volitelně přidá složku do `PATH` (sekce `[Code]`) a obsahuje `v
 z instalace Visual Studia, který se spustí jen když nainstalovaný runtime 14.x chybí nebo je
 starší než toolset buildu (`VCRedistNeeded`). `installer/build-installer.ps1` najde ISCC
 a redistributable a skript přeloží; výstup je
-`build/installer/OpenSCAD-<verze>-modern-win64-setup.exe`. Tichá instalace a odinstalace jsou
+`build/installer/OpenSCAD-<verze>-modern.<N>-win64-setup.exe` (N = `ModernRelease` v .iss, stejné číslo jako `OPENSCAD_MODERN_RELEASE` v CMake). Tichá instalace a odinstalace jsou
 standardní přepínače Inno (`/VERYSILENT /NORESTART`, `/CURRENTUSER`).
 
 ### 4.3d Průběžná integrace a podepisování kódu
@@ -150,6 +150,20 @@ oběma exe ikonu, `ProductName` (`OPENSCAD_PRODUCT_NAME`, výchozí `OpenSCAD 20
 (`2021.1.<N>.0`); instalátor nese stejné hodnoty v direktivách `VersionInfo*`
 (`/DModernRelease=N`). SignPath vyžaduje shodný název a verzi produktu ve všech podepsaných
 souborech. Připravené odpovědi do formuláře žádosti jsou v `installer/signpath-application.md`.
+
+### 4.3e Stránka programu na jodynek.cz
+
+Stránka o programu na <https://jodynek.cz/programs/openscad/> je verzovaná zde ve
+`www/openscad/` (`index.html` česky, `en.html` anglicky, `historie.html` / `history.html` s celou
+historií změn, `changelog.json`, `img/`), ve stejném rozložení jako stránky jCmd a jNotepadu.
+Na webovém sdílení se nic neupravuje přímo. `publish-www.ps1` (po `build-installer.ps1`) převede
+položku `next` v `changelog.json` na vydávanou verzi, nahraje instalátor se SHA-256 do
+`programs/openscad/releases/`, zkopíruje stránky s `?v=<verze>` u obrázků a PDF (proti
+mezipaměti prohlížeče), aktualizuje `programs/manifest.json`, záložní seznam v `index.html` webu
+a `HISTORIE-WEBU.md`, zapíše web do jeho vlastního gitu (`E:\Web\git-web.cmd`, push na GitLab;
+`tools/sync-web-history.ps1` ho nejdřív srovná) a výsledek zkontroluje přes HTTPS. Před každým
+vydáním doplňte změny do položky `next` v `changelog.json` (česky i anglicky) a zvyšte
+`ModernRelease` / `OPENSCAD_MODERN_RELEASE`.
 
 ### 4.4 Nástroje mimo vcpkg
 

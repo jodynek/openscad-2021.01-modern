@@ -10,7 +10,7 @@
 
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File .\installer\build-installer.ps1
-  -> build\installer\OpenSCAD-2021.01-modern-win64-setup.exe
+  -> build\installer\OpenSCAD-2021.01-modern.1-win64-setup.exe
 #>
 param(
     [string]$AppVersion = "2021.01",

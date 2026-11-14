@@ -96,7 +96,7 @@ Ready-made installers are on the [Releases page](https://github.com/jodynek/open
 powershell -ExecutionPolicy Bypass -File .\installer\build-installer.ps1
 ```
 
-Result: `build\installer\OpenSCAD-2021.01-modern-win64-setup.exe` (about 48 MB). It installs the
+Result: `build\installer\OpenSCAD-2021.01-modern.1-win64-setup.exe` (about 48 MB). It installs the
 GUI, `openscad-cli.exe` (the command-line build), the examples, fonts and colour schemes, offers
 the `.scad` file association and an optional PATH entry, and bundles the Visual C++ runtime
 (installed only when missing). Silent install: `setup.exe /VERYSILENT /NORESTART`
